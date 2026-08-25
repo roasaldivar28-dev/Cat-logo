@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catálogo de Unidades</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+<style>
+  :root{
+    --bg:#0B0D0F;
+    --panel:#14171A;
+    --panel-2:#1B1F23;
+    --line:#262B30;
+    --blue:#3E7CB1;
+    --yellow:#F2C14E;
+    --text:#EDEFF1;
+    --muted:#8B939B;
+    --radius:2px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:48px 48px;
+    background-position:-1px -1px;
+  }
+  header{
+    padding:28px 24px 20px;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .brand{
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:700;
+    font-size:28px;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+  }
+  .brand span{color:var(--yellow);}
+  .brand-sub{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--muted);
+    letter-spacing:1px;
+  }
+  main{max-width:1100px; margin:0 auto; padding:32px 24px 80px;}
+
+  /* ---------- CATÁLOGO (grid) ---------- */
+  #view-catalogo .lead{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:1.5px;
+    margin-bottom:20px;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+  }
+  .card{
+    background:var(--panel);
+    padding:0;
+    cursor:pointer;
+    transition:background 0.15s ease;
+    display:flex;
+    flex-direction:column;
+  }
+  .card:hover{background:var(--panel-2);}
+  .card-media{
+    width:100%;
+    aspect-ratio:4/3;
+    background:#0F1113;
+    overflow:hidden;
+    position:relative;
+    border-bottom:1px solid var(--line);
+  }
+  .card-media img{width:100%; height:100%; object-fit:cover; display:block;}
+  .card-code{
+    position:absolute; top:10px; left:10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    background:var(--yellow);
+    color:#14171A;
+    padding:2px 6px;
+    font-weight:600;
+    letter-spacing:0.5px;
+  }
+  .card-body{padding:16px;}
+  .card-title{
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:600;
+    font-size:20px;
+    text-transform:uppercase;
+    letter-spacing:0.3px;
+  }
+  .card-meta{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--muted);
+    margin-top:4px;
+  }
+
+  /* ---------- FICHA (detalle) ---------- */
+  #view-ficha{display:none;}
+  .back-btn{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--blue);
+    background:none;
+    border:none;
+    cursor:pointer;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    margin-bottom:20px;
+    padding:0;
+  }
+  .back-btn:hover{color:var(--yellow);}
+  .ficha{
+    border:1px solid var(--line);
+    background:var(--panel);
+  }
+  .ficha-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:16px;
+    padding:20px 20px 16px;
+    border-bottom:1px dashed var(--line);
+  }
+  .ficha-title{
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:700;
+    font-size:34px;
+    text-transform:uppercase;
+    line-height:1;
+  }
+  .ficha-vin{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--muted);
+    margin-top:6px;
+    letter-spacing:1px;
+  }
+  .qr-box{
+    text-align:center;
+    flex-shrink:0;
+  }
+  .qr-box img{
+    width:88px; height:88px;
+    background:#fff;
+    padding:6px;
+    display:block;
+  }
+  .qr-box .qr-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:9px;
+    color:var(--muted);
+    margin-top:4px;
+    letter-spacing:1px;
+  }
+  .ficha-body{
+    display:grid;
+    grid-template-columns:1.2fr 1fr;
+    gap:0;
+  }
+  @media (max-width:760px){ .ficha-body{grid-template-columns:1fr;} }
+
+  .visor{
+    border-right:1px solid var(--line);
+    padding:20px;
+  }
+  .visor model-viewer{
+    width:100%;
+    height:320px;
+    background:#0F1113;
+    border:1px solid var(--line);
+    --poster-color:#0F1113;
+  }
+  .fotos{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:6px;
+    margin-top:10px;
+  }
+  .fotos img{
+    width:100%;
+    aspect-ratio:1/1;
+    object-fit:cover;
+    border:1px solid var(--line);
+  }
+
+  .specs{padding:20px;}
+  .specs h3{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:1.5px;
+    color:var(--yellow);
+    margin-bottom:10px;
+  }
+  .spec-row{
+    display:flex;
+    justify-content:space-between;
+    padding:8px 0;
+    border-bottom:1px solid var(--line);
+    font-size:14px;
+  }
+  .spec-row span:first-child{color:var(--muted);}
+  .spec-row span:last-child{
+    font-family:'IBM Plex Mono', monospace;
+    text-align:right;
+  }
+  .desc{
+    margin-top:18px;
+    font-size:14px;
+    line-height:1.6;
+    color:#C9CDD1;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="brand">CATÁLOGO <span>/UNIDADES</span></div>
+    <div class="brand-sub">ESCANEA · CONSULTA · COMPARA</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ==================== VISTA 1: CATÁLOGO ==================== -->
+  <section id="view-catalogo">
+    <div class="lead">Unidades disponibles — toca una tarjeta o escanea su código QR</div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <!-- ==================== VISTA 2: FICHA DE UN CARRO ==================== -->
+  <section id="view-ficha">
+    <button class="back-btn" onclick="irACatalogo()">&larr; volver al catálogo</button>
+    <div class="ficha" id="ficha-contenido"></div>
+  </section>
+
+</main>
+
+<script>
+/* =====================================================================
+   1) TUS DATOS — edita este arreglo para agregar/quitar vehículos.
+      "id" debe ser único y sin espacios (se usa en la URL y en el QR).
+   ===================================================================== */
+const CARROS = [
+  {
+    id: "x35",
+    marca: "BAIC",
+    modelo: "X35",
+    anio: 2023,
+    portada: "https://placehold.co/600x450/1B1F23/8B939B?text=Foto+de+portada",
+    fotos: [
+      "https://placehold.co/300x300/1B1F23/8B939B?text=Foto+1",
+      "https://placehold.co/300x300/1B1F23/8B939B?text=Foto+2",
+      "https://placehold.co/300x300/1B1F23/8B939B?text=Foto+3"
+    ],
+    modelo3d: "", // pon aquí la URL de tu archivo .glb, ej: "modelos/x35.glb"
+    descripcion: "SUV compacta, motor 1.5L, transmisión CVT. Ideal para ciudad.",
+    specs: {
+      "Motor": "1.5L 4 cil.",
+      "Potencia": "113 hp",
+      "Transmisión": "CVT",
+      "Tracción": "Delantera",
+      "Kilometraje": "42,000 km",
+      "Color": "Blanco",
+      "Precio": "$215,000 MXN"
+    }
+  }
+  // Copia el bloque de arriba (desde { hasta }) y pega uno nuevo aquí
+  // abajo, separado por una coma, para agregar otro vehículo.
+];
+
+/* =====================================================================
+   2) NO NECESITAS TOCAR NADA DE AQUÍ PARA ABAJO
+   ===================================================================== */
+const grid = document.getElementById('grid');
+const viewCatalogo = document.getElementById('view-catalogo');
+const viewFicha = document.getElementById('view-ficha');
+const fichaContenido = document.getElementById('ficha-contenido');
+
+function pintarCatalogo(){
+  grid.innerHTML = CARROS.map(c => `
+    <div class="card" onclick="location.hash='#/carro/${c.id}'">
+      <div class="card-media">
+        <span class="card-code">#${c.id.toUpperCase()}</span>
+        <img src="${c.portada}" alt="${c.marca} ${c.modelo}">
+      </div>
+      <div class="card-body">
+        <div class="card-title">${c.marca} ${c.modelo}</div>
+        <div class="card-meta">${c.anio} · ${c.specs["Kilometraje"] || ''}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function pintarFicha(carro){
+  const urlUnidad = `${location.origin}${location.pathname}#/carro/${carro.id}`;
+  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(urlUnidad)}`;
+
+  const specsHtml = Object.entries(carro.specs).map(([k,v]) => `
+    <div class="spec-row"><span>${k}</span><span>${v}</span></div>
+  `).join('');
+
+  const visorHtml = carro.modelo3d
+    ? `<model-viewer src="${carro.modelo3d}" camera-controls auto-rotate shadow-intensity="1"></model-viewer>`
+    : `<model-viewer src="" poster="${carro.portada}" camera-controls></model-viewer>`;
+
+  fichaContenido.innerHTML = `
+    <div class="ficha-head">
+      <div>
+        <div class="ficha-title">${carro.marca} ${carro.modelo}</div>
+        <div class="ficha-vin">UNIDAD #${carro.id.toUpperCase()} · ${carro.anio}</div>
+      </div>
+      <div class="qr-box">
+        <img src="${qrSrc}" alt="QR de esta unidad">
+        <div class="qr-label">ESCANEA PARA<br>VER DE NUEVO</div>
+      </div>
+    </div>
+    <div class="ficha-body">
+      <div class="visor">
+        ${visorHtml}
+        <div class="fotos">
+          ${carro.fotos.map(f => `<img src="${f}">`).join('')}
+        </div>
+      </div>
+      <div class="specs">
+        <h3>Ficha técnica</h3>
+        ${specsHtml}
+        <div class="desc">${carro.descripcion}</div>
+      </div>
+    </div>
+  `;
+}
+
+function irACatalogo(){ location.hash = '#/'; }
+
+function enrutar(){
+  const hash = location.hash;
+  if(hash.startsWith('#/carro/')){
+    const id = hash.replace('#/carro/', '');
+    const carro = CARROS.find(c => c.id === id);
+    if(carro){
+      pintarFicha(carro);
+      viewCatalogo.style.display = 'none';
+      viewFicha.style.display = 'block';
+      return;
+    }
+  }
+  viewCatalogo.style.display = 'block';
+  viewFicha.style.display = 'none';
+}
+
+window.addEventListener('hashchange', enrutar);
+pintarCatalogo();
+enrutar();
+</script>
+
+</body>
+</html>
