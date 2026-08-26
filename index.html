@@ -396,7 +396,7 @@ function pintarFicha(carro){
       <div class="visor">
         ${visorHtml}
         <div class="fotos">
-          ${carro.fotos.map(f => `<img src="${f}" onclick="abrirLightbox('${f}')">`).join('')}
+         ${carro.fotos.map(f => `<img src="${f}" onclick="abrirLightbox(this.src)">`).join('')}
         </div>
       </div>
       <div class="specs">
