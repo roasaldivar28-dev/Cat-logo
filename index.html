@@ -393,7 +393,7 @@ function pintarFicha(carro){
   const urlUnidad = `${location.origin}${location.pathname}#/carro/${carro.id}`;
   const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(urlUnidad)}`;
   const telefonoLote = "525655486039"; 
-  const mensajeWA = encodeURIComponent(`¡Hola! Me interesa la unidad ${carro.marca} ${carro.modelo} ${carro.anio} (UNIDAD #${carro.id}). ¿Sigue disponible?`);
+  const mensajeWA = encodeURIComponent(`¡Hola! Me interesa la unidad ${carro.marca} ${carro.modelo} ${carro.anio}. ¿Sigue disponible?`);
   const urlWhatsApp = `https://wa.me/${telefonoLote}?text=${mensajeWA}`;
 
   const specsHtml = Object.entries(carro.specs).map(([k,v]) => `
