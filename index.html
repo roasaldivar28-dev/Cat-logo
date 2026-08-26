@@ -392,6 +392,9 @@ function pintarCatalogo(){
 function pintarFicha(carro){
   const urlUnidad = `${location.origin}${location.pathname}#/carro/${carro.id}`;
   const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(urlUnidad)}`;
+  const telefonoLote = "525655486039"; 
+  const mensajeWA = encodeURIComponent(`¡Hola! Me interesa la unidad ${carro.marca} ${carro.modelo} ${carro.anio} (UNIDAD #${carro.id}). ¿Sigue disponible?`);
+  const urlWhatsApp = `https://wa.me/${telefonoLote}?text=${mensajeWA}`;
 
   const specsHtml = Object.entries(carro.specs).map(([k,v]) => `
     <div class="spec-row"><span>${k}</span><span>${v}</span></div>
@@ -423,6 +426,9 @@ function pintarFicha(carro){
         <h3>Ficha técnica</h3>
         ${specsHtml}
         <div class="desc">${carro.descripcion}</div>
+        <a href="${urlWhatsApp}" target="_blank" class="btn-whatsapp">
+  💬 Preguntar por WhatsApp
+</a>
       </div>
     </div>
   `;
