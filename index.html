@@ -203,7 +203,34 @@
     object-fit:cover;
     border:1px solid var(--line);
   }
+.fotos img{ cursor:pointer; transition:opacity 0.15s; }
+.fotos img:hover{ opacity:0.8; }
 
+.lightbox{
+  display:none;
+  position:fixed;
+  top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.9);
+  z-index:999;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.lightbox.activo{ display:flex; }
+.lightbox img{
+  max-width:100%;
+  max-height:90vh;
+  object-fit:contain;
+}
+.lightbox-cerrar{
+  position:absolute;
+  top:20px; right:20px;
+  color:#fff;
+  font-size:32px;
+  background:none;
+  border:none;
+  cursor:pointer;
+}
   .specs{padding:20px;}
   .specs h3{
     font-family:'IBM Plex Mono', monospace;
@@ -255,6 +282,10 @@
     <button class="back-btn" onclick="irACatalogo()">&larr; volver al catálogo</button>
     <div class="ficha" id="ficha-contenido"></div>
   </section>
+  <div class="lightbox" id="lightbox" onclick="cerrarLightbox()">
+  <button class="lightbox-cerrar" onclick="cerrarLightbox()">&times;</button>
+  <img id="lightbox-img" src="">
+</div>
 
 </main>
 
@@ -364,7 +395,7 @@ function pintarFicha(carro){
       <div class="visor">
         ${visorHtml}
         <div class="fotos">
-          ${carro.fotos.map(f => `<img src="${f}">`).join('')}
+          ${carro.fotos.map(f => `<img src="${f}" onclick="abrirLightbox('${f}')">`).join('')}
         </div>
       </div>
       <div class="specs">
@@ -397,6 +428,13 @@ function enrutar(){
 window.addEventListener('hashchange', enrutar);
 pintarCatalogo();
 enrutar();
+  function abrirLightbox(src){
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('activo');
+}
+function cerrarLightbox(){
+  document.getElementById('lightbox').classList.remove('activo');
+}
 </script>
 
 </body>
