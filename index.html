@@ -278,6 +278,21 @@
 .btn-whatsapp:hover {
   background-color: #20ba5a;
 }
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+
+.badge-disponible { background-color: #2e7d32; color: #fff; }
+.badge-reservado  { background-color: #ed6c02; color: #fff; }
+.badge-vendido    { background-color: #d32f2f; color: #fff; }
+.badge-garantia   { background-color: #0288d1; color: #fff; }
 </style>
 </head>
 <body>
@@ -321,6 +336,7 @@ const CARROS = [
     marca: "BAIC",
     modelo: "X35",
     anio: 2023,
+    estado :
     portada: "fotos/x35.webp",
     fotos: [
       "fotos/x35_3.png",
@@ -344,6 +360,7 @@ const CARROS = [
     marca: "AUDI",
     modelo: "A3",
     anio: 2018,
+    estado : "Disponible", // puede ser : "Disponible" , "Reservado" , "Vendido" //
     portada: "fotos/audi_1.webp",
     fotos: [
       "",
@@ -382,6 +399,7 @@ function pintarCatalogo(){
         <img src="${c.portada}" alt="${c.marca} ${c.modelo}">
       </div>
       <div class="card-body">
+        ${c.estado ? `<span class="badge badge-${c.estado.toLowerCase()}">${c.estado}</span>` : ''} 
         <div class="card-title">${c.marca} ${c.modelo}</div>
         <div class="card-meta">${c.anio} · ${c.specs["Kilometraje"] || ''}</div>
       </div>
