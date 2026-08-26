@@ -399,7 +399,6 @@ function pintarCatalogo(){
         <img src="${c.portada}" alt="${c.marca} ${c.modelo}">
       </div>
       <div class="card-body">
-      ${c.estado ? '<span class="badge badge-' + c.estado.toLowerCase() + '">' + c.estado + '</span>' : ''}
         <div class="card-title">${c.marca} ${c.modelo}</div>
         <div class="card-meta">${c.anio} · ${c.specs["Kilometraje"] || ''}</div>
       </div>
