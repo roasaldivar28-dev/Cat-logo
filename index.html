@@ -436,7 +436,7 @@ function enrutar(){
 }
 
 async function cargarCarros(){
-  const { data, error } = await supabase.from('carros').select('*');
+  const { data, error } = await supabaseClient.from('carros').select('*');
   if(error){
     console.error('Error cargando carros:', error);
     return;
