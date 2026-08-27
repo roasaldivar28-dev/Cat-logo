@@ -337,6 +337,19 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let CARROS = [];
 
+async function cargarCarrosDesdeBD() {
+  const { data, error } = await supabase.from('carros').select('*');
+  
+  if (error) {
+    console.error('Error al traer los datos de Supabase:', error);
+    return;
+  }
+
+  CARROS = data;
+  pintarCatalogo();
+}
+
+document.addEventListener('DOMContentLoaded', cargarCarrosDesdeBD);
 /* =====================================================================
    2) NO NECESITAS TOCAR NADA DE AQUÍ PARA ABAJO
    ===================================================================== */
