@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --bg:#0B0D0F;
@@ -330,82 +331,11 @@
    1) TUS DATOS — edita este arreglo para agregar/quitar vehículos.
       "id" debe ser único y sin espacios (se usa en la URL y en el QR).
    ===================================================================== */
-const CARROS = [
-  {
-    id: "x35",
-    marca: "BAIC",
-    modelo: "X35",
-    anio: 2023,
-    estado : "Disponible",
-    portada: "fotos/x35.webp",
-    fotos: [
-      "fotos/x35_3.png",
-      "fotos/x35_1.jpg",
-      "fotos/x35_2.png"
-    ],
-    modelo3d: "", // pon aquí la URL de tu archivo .glb, ej: "modelos/x35.glb"
-    descripcion: "SUV compacta, motor 1.5L, transmisión CVT. Ideal para ciudad.",
-    specs: {
-      "Motor": "1.5L 4 cil.",
-      "Potencia": "113 hp",
-      "Transmisión": "CVT",
-      "Tracción": "Delantera",
-      "Kilometraje": "42,000 km",
-      "Color": "Blanco",
-      "Precio": "$215,000 MXN"
-    }
-  },
-   {
-    id: "A3",
-    marca: "AUDI",
-    modelo: "A3",
-    anio: 2018,
-    estado : "Disponible", 
-    portada: "fotos/audi_1.webp",
-    fotos: [
-      "fotos/audi_2.jpeg",
-      "fotos/audi_4.jpeg",
-      "fotos/audi_3.jpeg"
-    ],
-    modelo3d: "", // pon aquí la URL de tu archivo .glb, ej: "modelos/x35.glb"
-    descripcion: "Audi A3, coche con estilo moderno y deportivo . Ideal para ciudad.<br> Factura Original <br> Unico Dueño",
-    specs: {
-      "Motor": "1.4L Turbo 4 cil.",
-      "Potencia": "150 hp",
-      "Transmisión": "Automatico",
-      "Tracción": "Delantera",
-      "Kilometraje": "98,000 km",
-      "Color": "Blanco",
-      "Precio": "$248,000 MXN"
-    }
-  },
-    {
-    id: "corolla",
-    marca: "Toyota",
-    modelo: "Corolla",
-    anio: 2021,
-    estado : "Disponible",
-    portada: "fotos/yota_2.jpeg",
-    fotos: [
-      "fotos/yota_1.jpeg",
-      "fotos/yota_3.jpeg",
-      ""
-    ],
-    modelo3d: "", // pon aquí la URL de tu archivo .glb, ej: "modelos/x35.glb"
-    descripcion: "Factura Original<br>Vidrios y Seguros Electricos<br>Bolsas de Aire<br>Rines de Aluminio.",
-    specs: {
-      "Motor": "2.0L 4 cil.",
-      "Potencia": "168 hp",
-      "Transmisión": "Automatica",
-      "Tracción": "Delantera",
-      "Kilometraje": "87,000 km",
-      "Color": "Azul",
-      "Precio": "$298,000 MXN"
-    }
-  }
-  // Copia el bloque de arriba (desde { hasta }) y pega uno nuevo aquí
-  // abajo, separado por una coma, para agregar otro vehículo.
-];
+const SUPABASE_URL = "https://xkhoorjntavmzhuikauj.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhraG9vcmpudGF2bXpodWlrYXVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3ODY2OTMsImV4cCI6MjEwMzM2MjY5M30.PHBKRKmvDtFMSE0Csy01Qo82s9e8DKXWBicf7JrSHz4";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let CARROS = [];
 
 /* =====================================================================
    2) NO NECESITAS TOCAR NADA DE AQUÍ PARA ABAJO
@@ -492,9 +422,18 @@ function enrutar(){
   viewFicha.style.display = 'none';
 }
 
-window.addEventListener('hashchange', enrutar);
-pintarCatalogo();
-enrutar();
+async function cargarCarros(){
+  const { data, error } = await supabase.from('carros').select('*');
+  if(error){
+    console.error('Error cargando carros:', error);
+    return;
+  }
+  CARROS = data;
+  window.addEventListener('hashchange', enrutar);
+  pintarCatalogo();
+  enrutar();
+}
+cargarCarros();
   function abrirLightbox(src){
   document.getElementById('lightbox-img').src = src;
   document.getElementById('lightbox').classList.add('activo');
