@@ -3,231 +3,340 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel Admin - Lote de Autos</title>
-  <style>
-    * { box-sizing: border-box; }
-    body { background-color: #0b0d0f; color: #fff; font-family: Arial, sans-serif; padding: 15px; max-width: 800px; margin: 0 auto; }
-    h1, h2 { color: #f39c12; text-align: center; }
-    .card { background: #14171a; padding: 20px; border-radius: 8px; border: 1px solid #262b30; margin-bottom: 25px; }
-    .form-group { margin-bottom: 12px; }
-    label { display: block; margin-bottom: 4px; font-weight: bold; color: #ccc; font-size: 14px; }
-    input, textarea, select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #262b30; background: #1b1f23; color: #fff; }
-    button { background: #f39c12; color: #000; font-weight: bold; padding: 12px; border: none; width: 100%; border-radius: 6px; cursor: pointer; font-size: 15px; }
-    button:hover { background: #e08e0b; }
-    
-    /* Lista de Inventario */
-    .item-row { display: flex; align-items: center; justify-content: space-between; background: #1b1f23; padding: 12px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #262b30; flex-wrap: wrap; gap: 10px; }
-    .item-info { flex: 1; min-width: 200px; }
-    .item-actions { display: flex; gap: 6px; flex-wrap: wrap; }
-    .btn-sm { padding: 6px 10px; font-size: 12px; border-radius: 4px; width: auto; font-weight: bold; }
-    .btn-disp { background: #27ae60; color: #fff; }
-    .btn-apar { background: #f39c12; color: #000; }
-    .btn-vend { background: #e74c3c; color: #fff; }
-    .btn-del { background: #7f8c8d; color: #fff; }
-    .btn-qr { background: #3498db; color: #fff; }
-
-    /* Modal de QR para imprimir */
-    #qrModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 1000; }
-    .modal-content { background: #fff; color: #000; padding: 20px; border-radius: 8px; text-align: center; max-width: 320px; }
-    @media print {
-      body * { visibility: hidden; }
-      #qrModal, #qrModal * { visibility: visible; }
-      #qrModal { position: absolute; left: 0; top: 0; width: 100%; background: #fff; }
-      .no-print { display: none; }
-    }
-  </style>
+  <title>Panel de Administración - Catálogo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Librería para generar código QR -->
-  <script src="https://cdnjs.cloudflare.net/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
-<body>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8">
 
-  <h1>PANEL DE ADMINISTRACIÓN</h1>
-
-  <!-- FORMULARIO DE REGISTRO -->
-  <div class="card">
-    <h2>Agregar Nueva Unidad</h2>
-    <form id="carForm">
-      <div class="form-group">
-        <label>ID / Clave (#X35, #A3):</label>
-        <input type="text" id="id" required placeholder="ej. X35">
+  <!-- ==================== PANTALLA DE LOGIN ==================== -->
+  <div id="loginScreen" class="max-w-sm mx-auto mt-20 bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl">
+    <h1 class="text-2xl font-bold text-emerald-400 mb-1">Panel de Control</h1>
+    <p class="text-slate-400 text-sm mb-6">Inicia sesión para continuar</p>
+    <form id="loginForm" class="space-y-4">
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Correo</label>
+        <input type="email" id="loginEmail" required class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 focus:outline-none focus:border-emerald-500">
       </div>
-      <div class="form-group">
-        <label>Marca:</label>
-        <input type="text" id="marca" required placeholder="ej. BAIC">
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Contraseña</label>
+        <input type="password" id="loginPass" required class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 focus:outline-none focus:border-emerald-500">
       </div>
-      <div class="form-group">
-        <label>Modelo:</label>
-        <input type="text" id="modelo" required placeholder="ej. X35">
-      </div>
-      <div class="form-group">
-        <label>Año:</label>
-        <input type="number" id="anio" required placeholder="ej. 2023">
-      </div>
-      <div class="form-group">
-        <label>Kilometraje (km):</label>
-        <input type="number" id="km" required placeholder="ej. 42000">
-      </div>
-      <div class="form-group">
-        <label>Seleccionar Foto Principal (Desde Cámara/Galería):</label>
-        <input type="file" id="fotoFile" accept="image/*" required>
-      </div>
-      <div class="form-group">
-        <label>Descripción / Puntos clave (separados por coma):</label>
-        <textarea id="descripcion" rows="2" placeholder="Factura Original, Único dueño, Pagos al corriente"></textarea>
-      </div>
-      <button type="submit" id="btnGuardar">Guardar y Publicar</button>
+      <p id="loginError" class="text-red-400 text-sm hidden"></p>
+      <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-6 py-2.5 rounded-lg transition">
+        Iniciar sesión
+      </button>
     </form>
   </div>
 
-  <!-- GESTIÓN DE INVENTARIO Y ACCIONES RÁPIDAS -->
-  <div class="card">
-    <h2>Inventario de Unidades</h2>
-    <div id="listaInventario">Cargando inventario...</div>
-  </div>
+  <!-- ==================== PANEL (oculto hasta iniciar sesión) ==================== -->
+  <div id="panel" class="hidden max-w-6xl mx-auto space-y-8">
 
-  <!-- MODAL PARA IMPRIMIR QR -->
-  <div id="qrModal">
-    <div class="modal-content">
-      <h3 id="qrTitulo" style="margin-top:0;">Ficha del Auto</h3>
-      <div id="qrcode" style="display:flex; justify-content:center; margin: 15px 0;"></div>
-      <p style="font-size: 12px;">Escanéame para ver detalles completos en línea</p>
-      <button onclick="window.print()" class="no-print" style="margin-bottom:8px; background:#27ae60; color:#fff;">🖨️ Imprimir QR</button>
-      <button onclick="cerrarQR()" class="no-print btn-del">Cerrar</button>
-    </div>
-  </div>
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-700 pb-4 gap-4">
+      <div>
+        <h1 class="text-3xl font-bold text-emerald-400">Panel de Control</h1>
+        <p class="text-slate-400 text-sm">Gestión de inventario de vehículos</p>
+      </div>
+      <div class="flex gap-2">
+        <a href="index.html" target="_blank" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-lg text-sm border border-slate-700 transition">
+          Ver Catálogo ↗
+        </a>
+        <button onclick="cerrarSesion()" class="bg-red-900/40 hover:bg-red-900/80 text-red-300 px-4 py-2 rounded-lg text-sm border border-red-800 transition">
+          Cerrar sesión
+        </button>
+      </div>
+    </header>
 
-  <script>
-    // Conexión corregida a Supabase
-    const SUPABASE_URL = "https://xkhoorjntavmzhuikauj.supabase.co"; 
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhraG9vcmpudGF2bXpodWlrYXVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3ODY2OTMsImV4cCI6MjEwMzM2MjY5M30.PHBKRKmvDtFMSE0Csy01Qo82s9e8DKXWBicf7JrSHz4"; // Reemplaza con tu anon key completa
-    
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    <!-- Formulario -->
+    <section class="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl">
+      <h2 id="formTitle" class="text-xl font-semibold mb-4 text-emerald-300">Registrar Nuevo Vehículo</h2>
 
-    // URL base de tu catálogo en GitHub Pages
-    const BASE_URL_CATALOGO = "https://roasaldivar28-dev.github.io/Cat-logo/";
+      <form id="carForm" class="space-y-4">
+        <input type="hidden" id="carId">
 
-    // Cargar Inventario al iniciar
-    document.addEventListener("DOMContentLoaded", cargarInventario);
-
-    async function cargarInventario() {
-      const contenedor = document.getElementById('listaInventario');
-      const { data: carros, error } = await supabaseClient.from('carros').select('*');
-      
-      if(error) {
-        contenedor.innerHTML = "<p style='color:#e74c3c'>Error al cargar inventario: " + error.message + "</p>";
-        return;
-      }
-
-      if(!carros || carros.length === 0) {
-        contenedor.innerHTML = "<p>No hay carros registrados aún.</p>";
-        return;
-      }
-
-      contenedor.innerHTML = carros.map(c => `
-        <div class="item-row">
-          <div class="item-info">
-            <strong>${c.marca} ${c.modelo} (${c.anio})</strong> - #${c.id}<br>
-            <small>Estado: <span style="color:#f39c12">${c.estado || 'DISPONIBLE'}</span></small>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Código único (id) *</label>
+            <input type="text" id="idCarro" required placeholder="ej. x35, a3-2018" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 focus:outline-none focus:border-emerald-500">
           </div>
-          <div class="item-actions">
-            <button class="btn-sm btn-disp" onclick="cambiarEstado('${c.id}', 'DISPONIBLE')">Dispo</button>
-            <button class="btn-sm btn-apar" onclick="cambiarEstado('${c.id}', 'APARTADO')">Apart</button>
-            <button class="btn-sm btn-vend" onclick="cambiarEstado('${c.id}', 'VENDIDO')">Vend</button>
-            <button class="btn-sm btn-qr" onclick="generarQR('${c.id}', '${c.marca} ${c.modelo}')">QR</button>
-            <button class="btn-sm btn-del" onclick="eliminarCarro('${c.id}')">🗑️</button>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Marca *</label>
+            <input type="text" id="marca" required placeholder="Ej. BAIC" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Modelo *</label>
+            <input type="text" id="modelo" required placeholder="Ej. X35" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 focus:outline-none focus:border-emerald-500">
           </div>
         </div>
-      `).join('');
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Año *</label>
+            <input type="number" id="anio" required placeholder="Ej. 2023" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Estado</label>
+            <select id="estado" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 focus:outline-none focus:border-emerald-500">
+              <option value="Disponible">Disponible</option>
+              <option value="Apartado">Apartado</option>
+              <option value="Vendido">Vendido</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Foto de portada</label>
+            <input type="file" id="fotoPortada" accept="image/*" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-emerald-600 file:text-white">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Fotos de galería (puedes elegir varias)</label>
+          <input type="file" id="fotoGaleria" multiple accept="image/*" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-emerald-600 file:text-white">
+        </div>
+
+        <h3 class="text-sm font-semibold text-slate-300 pt-2">Ficha técnica</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Motor</label>
+            <input type="text" id="specMotor" placeholder="Ej. 1.5L 4 cil." class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Potencia</label>
+            <input type="text" id="specPotencia" placeholder="Ej. 113 hp" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Transmisión</label>
+            <input type="text" id="specTransmision" placeholder="Ej. CVT" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Tracción</label>
+            <input type="text" id="specTraccion" placeholder="Ej. Delantera" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Kilometraje</label>
+            <input type="text" id="specKm" placeholder="Ej. 42,000 km" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Color</label>
+            <input type="text" id="specColor" placeholder="Ej. Blanco" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 focus:outline-none focus:border-emerald-500">
+          </div>
+          <div class="md:col-span-3">
+            <label class="block text-xs text-slate-400 mb-1">Precio</label>
+            <input type="text" id="specPrecio" placeholder="Ej. $215,000 MXN" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Descripción</label>
+          <textarea id="descripcion" rows="3" placeholder="Ej. SUV compacta, ideal para ciudad..." class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 focus:outline-none focus:border-emerald-500"></textarea>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <button type="submit" id="btnGuardar" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-6 py-2.5 rounded-lg transition shadow">
+            Guardar Auto
+          </button>
+          <button type="button" id="btnCancelar" onclick="resetForm()" class="hidden bg-slate-700 hover:bg-slate-600 text-slate-300 font-medium px-4 py-2.5 rounded-lg transition">
+            Cancelar Edición
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Lista -->
+    <section class="space-y-4">
+      <h2 class="text-xl font-semibold text-slate-200">Inventario Registrado</h2>
+      <div id="listaInventario" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
+  </div>
+
+<script>
+  const SUPABASE_URL = "https://xkhoorjntavmzhuikauj.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhraG9vcmpudGF2bXpodWlrYXVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3ODY2OTMsImV4cCI6MjEwMzM2MjY5M30.PHBKRKmvDtFMSE0Csy01Qo82s9e8DKXWBicf7JrSHz4";
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const loginScreen = document.getElementById('loginScreen');
+  const panel = document.getElementById('panel');
+
+  // ---- LOGIN ----
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPass').value;
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const errBox = document.getElementById('loginError');
+    if (error) {
+      errBox.textContent = "Correo o contraseña incorrectos.";
+      errBox.classList.remove('hidden');
+      return;
     }
+    mostrarPanel();
+  });
 
-    // 1. Guardar vehículo + Subir Foto
-    document.getElementById('carForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('btnGuardar');
-      btn.innerText = "Subiendo foto y guardando...";
-      btn.disabled = true;
+  async function cerrarSesion(){
+    await supabase.auth.signOut();
+    location.reload();
+  }
 
-      try {
-        const fileInput = document.getElementById('fotoFile');
-        const file = fileInput.files[0];
-        const fileName = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+  function mostrarPanel(){
+    loginScreen.classList.add('hidden');
+    panel.classList.remove('hidden');
+    cargarInventario();
+  }
 
-        // Subir imagen a Supabase Storage (Bucket 'fotos-carros')
-        const { data: storageData, error: storageError } = await supabaseClient
-          .storage
-          .from('fotos-carros')
-          .upload(fileName, file);
+  // Revisa si ya había sesión activa al cargar la página
+  supabase.auth.getSession().then(({ data }) => {
+    if (data.session) mostrarPanel();
+  });
 
-        if (storageError) throw storageError;
+  // ---- GUARDAR / ACTUALIZAR ----
+  document.getElementById("carForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById("btnGuardar");
+    btn.disabled = true;
+    btn.innerText = "Subiendo...";
 
-        // Obtener URL Pública de la imagen subida
-        const { data: publicUrlData } = supabaseClient.storage.from('fotos-carros').getPublicUrl(fileName);
-        const fotoUrl = publicUrlData.publicUrl;
+    try {
+      const idOriginal = document.getElementById("carId").value; // vacío si es nuevo
+      const id = document.getElementById("idCarro").value.trim();
+      const marca = document.getElementById("marca").value;
+      const modelo = document.getElementById("modelo").value;
+      const anio = parseInt(document.getElementById("anio").value);
+      const estado = document.getElementById("estado").value;
+      const descripcion = document.getElementById("descripcion").value;
 
-        // Insertar registro en la tabla 'carros'
-        const nuevoCarro = {
-          id: document.getElementById('id').value.trim(),
-          marca: document.getElementById('marca').value.trim(),
-          modelo: document.getElementById('modelo').value.trim(),
-          anio: parseInt(document.getElementById('anio').value),
-          km: parseInt(document.getElementById('km').value),
-          estado: 'DISPONIBLE',
-          portada: fotoUrl,
-          descripcion: document.getElementById('descripcion').value.trim()
-        };
+      const specs = {
+        "Motor": document.getElementById("specMotor").value,
+        "Potencia": document.getElementById("specPotencia").value,
+        "Transmisión": document.getElementById("specTransmision").value,
+        "Tracción": document.getElementById("specTraccion").value,
+        "Kilometraje": document.getElementById("specKm").value,
+        "Color": document.getElementById("specColor").value,
+        "Precio": document.getElementById("specPrecio").value
+      };
 
-        const { error: insertError } = await supabaseClient.from('carros').insert([nuevoCarro]);
+      const filePortada = document.getElementById("fotoPortada").files[0];
+      const filesGaleria = document.getElementById("fotoGaleria").files;
 
-        if (insertError) throw insertError;
+      const payload = { id, marca, modelo, anio, estado, descripcion, specs };
 
-        alert("¡Vehículo publicado correctamente!");
-        document.getElementById('carForm').reset();
-        cargarInventario();
-      } catch (err) {
-        alert("Error: " + err.message);
-      } finally {
-        btn.innerText = "Guardar y Publicar";
-        btn.disabled = false;
+      if (filePortada) {
+        payload.portada = await subirFoto(filePortada);
       }
-    });
-
-    // 2. Cambiar Estado a 1-Clic
-    async function cambiarEstado(id, nuevoEstado) {
-      const { error } = await supabaseClient.from('carros').update({ estado: nuevoEstado }).eq('id', id);
-      if(error) alert("Error al actualizar estado: " + error.message);
-      else cargarInventario();
-    }
-
-    // 3. Eliminar Carro
-    async function eliminarCarro(id) {
-      if(confirm(`¿Seguro que deseas eliminar el carro #${id}?`)) {
-        const { error } = await supabaseClient.from('carros').delete().eq('id', id);
-        if(error) alert("Error al eliminar: " + error.message);
-        else cargarInventario();
+      if (filesGaleria.length > 0) {
+        const urls = [];
+        for (const f of filesGaleria) urls.push(await subirFoto(f));
+        payload.fotos = urls;
       }
+
+      if (idOriginal) {
+        const { error } = await supabase.from("carros").update(payload).eq("id", idOriginal);
+        if (error) throw error;
+        alert("¡Vehículo actualizado!");
+      } else {
+        const { error } = await supabase.from("carros").insert([payload]);
+        if (error) throw error;
+        alert("¡Vehículo registrado!");
+      }
+
+      resetForm();
+      cargarInventario();
+    } catch (err) {
+      console.error(err);
+      alert("Error al guardar: " + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerText = "Guardar Auto";
+    }
+  });
+
+  async function subirFoto(file){
+    const fileName = `${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
+    const { error } = await supabase.storage.from("fotos-carros").upload(fileName, file);
+    if (error) throw error;
+    const { data } = supabase.storage.from("fotos-carros").getPublicUrl(fileName);
+    return data.publicUrl;
+  }
+
+  async function cargarInventario() {
+    const contenedor = document.getElementById("listaInventario");
+    contenedor.innerHTML = "<p class='text-slate-400'>Cargando...</p>";
+
+    const { data: autos, error } = await supabase.from("carros").select("*").order("created_at", { ascending: false });
+
+    if (error) {
+      contenedor.innerHTML = "<p class='text-red-400'>Error al cargar inventario.</p>";
+      return;
+    }
+    if (!autos || autos.length === 0) {
+      contenedor.innerHTML = "<p class='text-slate-400'>No hay vehículos registrados.</p>";
+      return;
     }
 
-    // 4. Generar Código QR para imprimir
-    function generarQR(id, nombre) {
-      document.getElementById('qrTitulo').innerText = `${nombre} (#${id})`;
-      document.getElementById('qrcode').innerHTML = "";
-      
-      const linkCarro = `${BASE_URL_CATALOGO}#carro-${id}`;
-      
-      new QRCode(document.getElementById("qrcode"), {
-        text: linkCarro,
-        width: 180,
-        height: 180
-      });
+    contenedor.innerHTML = autos.map(auto => {
+      const foto = auto.portada || "https://via.placeholder.com/400x250?text=Sin+Foto";
+      const precio = (auto.specs && auto.specs["Precio"]) ? auto.specs["Precio"] : "";
+      return `
+        <div class="bg-slate-800 border border-slate-700 rounded-lg overflow-hidden flex flex-col justify-between">
+          <div>
+            <img src="${foto}" class="w-full h-44 object-cover">
+            <div class="p-4 space-y-2">
+              <div class="flex justify-between items-start">
+                <h3 class="font-bold text-lg">${auto.marca} ${auto.modelo} (${auto.anio})</h3>
+                <span class="text-xs px-2 py-1 rounded bg-slate-700 text-emerald-400 border border-slate-600">${auto.estado || ''}</span>
+              </div>
+              <p class="text-emerald-400 font-bold">${precio}</p>
+            </div>
+          </div>
+          <div class="p-4 pt-0 flex gap-2">
+            <button onclick="prepararEdicion('${auto.id}')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-xs py-2 rounded transition">Editar</button>
+            <button onclick="eliminarAuto('${auto.id}')" class="bg-red-900/40 hover:bg-red-900/80 text-red-300 text-xs px-3 py-2 rounded border border-red-800 transition">Eliminar</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
 
-      document.getElementById('qrModal').style.display = 'flex';
-    }
+  async function prepararEdicion(id) {
+    const { data: auto, error } = await supabase.from("carros").select("*").eq("id", id).single();
+    if (error) return alert("Error al obtener datos");
 
-    function cerrarQR() {
-      document.getElementById('qrModal').style.display = 'none';
-    }
-  </script>
+    document.getElementById("carId").value = auto.id;
+    document.getElementById("idCarro").value = auto.id;
+    document.getElementById("marca").value = auto.marca || "";
+    document.getElementById("modelo").value = auto.modelo || "";
+    document.getElementById("anio").value = auto.anio || "";
+    document.getElementById("estado").value = auto.estado || "Disponible";
+    document.getElementById("descripcion").value = auto.descripcion || "";
+
+    const s = auto.specs || {};
+    document.getElementById("specMotor").value = s["Motor"] || "";
+    document.getElementById("specPotencia").value = s["Potencia"] || "";
+    document.getElementById("specTransmision").value = s["Transmisión"] || "";
+    document.getElementById("specTraccion").value = s["Tracción"] || "";
+    document.getElementById("specKm").value = s["Kilometraje"] || "";
+    document.getElementById("specColor").value = s["Color"] || "";
+    document.getElementById("specPrecio").value = s["Precio"] || "";
+
+    document.getElementById("formTitle").innerText = "Editar Vehículo";
+    document.getElementById("btnGuardar").innerText = "Actualizar Auto";
+    document.getElementById("btnCancelar").classList.remove("hidden");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function eliminarAuto(id) {
+    if (!confirm("¿Seguro que quieres eliminar este auto?")) return;
+    const { error } = await supabase.from("carros").delete().eq("id", id);
+    if (error) alert("Error al eliminar: " + error.message);
+    else cargarInventario();
+  }
+
+  function resetForm() {
+    document.getElementById("carForm").reset();
+    document.getElementById("carId").value = "";
+    document.getElementById("formTitle").innerText = "Registrar Nuevo Vehículo";
+    document.getElementById("btnGuardar").innerText = "Guardar Auto";
+    document.getElementById("btnCancelar").classList.add("hidden");
+  }
+</script>
 </body>
 </html>
 
