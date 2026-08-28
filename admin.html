@@ -45,7 +45,7 @@
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.net/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -282,9 +282,9 @@
       document.getElementById('marca').value = carro.marca || '';
       document.getElementById('modelo').value = carro.modelo || '';
       document.getElementById('anio').value = carro.anio || '';
-      document.getElementById('km').value = carro.km || '';
-
+      
       const specs = carro.specs || {};
+      document.getElementById('km').value = specs.km || '';
       document.getElementById('specMotor').value = specs.motor || '';
       document.getElementById('specTransmision').value = specs.transmision || '';
       document.getElementById('specPotencia').value = specs.potencia || '';
@@ -343,6 +343,7 @@
         }
 
         const specsJson = {
+          km: parseInt(document.getElementById('km').value) || 0,
           motor: document.getElementById('specMotor').value.trim(),
           transmision: document.getElementById('specTransmision').value.trim(),
           potencia: document.getElementById('specPotencia').value.trim(),
@@ -355,7 +356,6 @@
           marca: document.getElementById('marca').value.trim(),
           modelo: document.getElementById('modelo').value.trim(),
           anio: parseInt(document.getElementById('anio').value),
-          km: parseInt(document.getElementById('km').value),
           portada: portadaUrl,
           fotos: fotosGaleriaUrls,
           specs: specsJson,
