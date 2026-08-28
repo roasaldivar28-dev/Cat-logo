@@ -92,19 +92,14 @@
           </div>
         </div>
 
-        <div class="grid-2">
-          <div class="form-group">
-            <label>Año:</label>
-            <input type="number" id="anio" required placeholder="ej. 2023">
-          </div>
-          <div class="form-group">
-            <label>Precio ($ MXN):</label>
-            <input type="number" id="specPrecio" required placeholder="ej. 215000">
-          </div>
+        <div class="form-group">
+          <label>Año:</label>
+          <input type="number" id="anio" required placeholder="ej. 2023">
         </div>
 
         <!-- ESPECIFICACIONES TÉCNICAS (SPECS) -->
         <h3 style="color:#f39c12; font-size: 15px; margin-top: 15px;">Ficha Técnica (Specs)</h3>
+        
         <div class="grid-2">
           <div class="form-group">
             <label>Color:</label>
@@ -115,25 +110,32 @@
             <input type="text" id="specMotor" required placeholder="ej. 1.5L 4 cil.">
           </div>
         </div>
+
         <div class="grid-2">
+          <div class="form-group">
+            <label>Precio ($ MXN sin comas):</label>
+            <input type="number" id="specPrecio" required placeholder="ej. 215000">
+          </div>
           <div class="form-group">
             <label>Potencia:</label>
             <input type="text" id="specPotencia" required placeholder="ej. 113 hp">
           </div>
+        </div>
+
+        <div class="grid-2">
           <div class="form-group">
             <label>Tracción:</label>
             <input type="text" id="specTraccion" required placeholder="ej. Delantera">
           </div>
+          <div class="form-group">
+            <label>Kilometraje (número sin comas):</label>
+            <input type="number" id="specKm" required placeholder="ej. 42000">
+          </div>
         </div>
-        <div class="grid-2">
-          <div class="form-group">
-            <label>Kilometraje (km):</label>
-            <input type="number" id="km" required placeholder="ej. 42000">
-          </div>
-          <div class="form-group">
-            <label>Transmisión:</label>
-            <input type="text" id="specTransmision" required placeholder="ej. CVT / Automática">
-          </div>
+
+        <div class="form-group">
+          <label>Transmisión:</label>
+          <input type="text" id="specTransmision" required placeholder="ej. CVT / Automática">
         </div>
 
         <!-- FOTOS -->
@@ -190,13 +192,19 @@
     let idActualQR = '';
     let inventarioLocal = [];
 
-    // Estado de sesión
+    // Verificación de sesión al iniciar
     document.addEventListener("DOMContentLoaded", async () => {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (session) mostrarPanel();
-      else mostrarLogin();
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session) mostrarPanel();
+        else mostrarLogin();
+      } catch (err) {
+        console.error("Error comprobando sesión:", err);
+        mostrarLogin();
+      }
     });
 
+    // Evento Formulario Login
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('btnLogin');
@@ -206,14 +214,20 @@
       const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value.trim();
 
-      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      try {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
-      if (error) {
-        alert("Error al iniciar sesión: " + error.message);
+        if (error) {
+          alert("Error de autenticación: " + error.message);
+          btn.innerText = "Entrar al Panel";
+          btn.disabled = false;
+        } else {
+          mostrarPanel();
+        }
+      } catch (err) {
+        alert("Error de conexión: " + err.message);
         btn.innerText = "Entrar al Panel";
         btn.disabled = false;
-      } else {
-        mostrarPanel();
       }
     });
 
@@ -276,7 +290,8 @@
       return publicUrlData.publicUrl;
     }
 
-    function formatearMoneda(val) {
+    // Funciones de formato exacto para Specs
+    function formatearPrecio(val) {
       const num = parseInt(val) || 0;
       return '$' + num.toLocaleString('en-US') + ' MXN';
     }
@@ -300,18 +315,18 @@
       document.getElementById('anio').value = carro.anio || '';
       
       const specs = carro.specs || {};
-      
-      // Limpiar formatos para que en los inputs solo salgan números
-      const rawPrecio = specs["Precio"] ? specs["Precio"].replace(/[^0-9]/g, '') : '';
-      const rawKm = specs["Kilometraje"] ? specs["Kilometraje"].replace(/[^0-9]/g, '') : (specs.km || '');
 
+      // Extraer solo dígitos de las cadenas para rellenar los inputs numéricos
+      const rawPrecio = specs["Precio"] ? specs["Precio"].replace(/[^0-9]/g, '') : '';
+      const rawKm = specs["Kilometraje"] ? specs["Kilometraje"].replace(/[^0-9]/g, '') : '';
+
+      document.getElementById('specColor').value = specs["Color"] || '';
+      document.getElementById('specMotor').value = specs["Motor"] || '';
       document.getElementById('specPrecio').value = rawPrecio;
-      document.getElementById('km').value = rawKm;
-      document.getElementById('specColor').value = specs["Color"] || specs.color || '';
-      document.getElementById('specMotor').value = specs["Motor"] || specs.motor || '';
-      document.getElementById('specPotencia').value = specs["Potencia"] || specs.potencia || '';
-      document.getElementById('specTraccion').value = specs["Tracción"] || specs.traccion || '';
-      document.getElementById('specTransmision').value = specs["Transmisión"] || specs.transmision || '';
+      document.getElementById('specPotencia').value = specs["Potencia"] || '';
+      document.getElementById('specTraccion').value = specs["Tracción"] || '';
+      document.getElementById('specKm').value = rawKm;
+      document.getElementById('specTransmision').value = specs["Transmisión"] || '';
 
       document.getElementById('descripcion').value = carro.descripcion || '';
 
@@ -336,6 +351,7 @@
       document.getElementById('lblGaleria').innerText = "Galería de Fotos (puedes seleccionar varias):";
     }
 
+    // Evento guardar o actualizar carro
     document.getElementById('carForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('btnGuardar');
@@ -365,13 +381,13 @@
         }
 
         const rawPrecio = document.getElementById('specPrecio').value;
-        const rawKm = document.getElementById('km').value;
+        const rawKm = document.getElementById('specKm').value;
 
-        // Construir el objeto exactamente como se requiere en la imagen
+        // Formato exacto del JSON de specs
         const specsJson = {
           "Color": document.getElementById('specColor').value.trim(),
           "Motor": document.getElementById('specMotor').value.trim(),
-          "Precio": formatearMoneda(rawPrecio),
+          "Precio": formatearPrecio(rawPrecio),
           "Potencia": document.getElementById('specPotencia').value.trim(),
           "Tracción": document.getElementById('specTraccion').value.trim(),
           "Kilometraje": formatearKm(rawKm),
@@ -449,19 +465,7 @@
       const canvas = qrContainer.querySelector('canvas');
 
       let imageSrc = "";
-
       if (img && img.src) {
         imageSrc = img.src;
       } else if (canvas) {
-        imageSrc = canvas.toDataURL("image/png");
-      }
-
-      if (!imageSrc) {
-        alert("El código QR aún se está generando, intenta de nuevo.");
-        return;
-      }
-
-      const link = document.createElement('a');
-      link.href = imageSrc;
-      link.download = `QR_Auto_${idActualQR}.png`;
-      document.
+        image
