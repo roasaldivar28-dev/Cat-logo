@@ -98,36 +98,42 @@
             <input type="number" id="anio" required placeholder="ej. 2023">
           </div>
           <div class="form-group">
-            <label>Kilometraje (km):</label>
-            <input type="number" id="km" required placeholder="ej. 42000">
+            <label>Precio ($ MXN):</label>
+            <input type="number" id="specPrecio" required placeholder="ej. 215000">
           </div>
         </div>
 
         <!-- ESPECIFICACIONES TÉCNICAS (SPECS) -->
-        <h3 style="color:#f39c12; font-size: 15px; margin-top: 15px;">Especificaciones Técnicas (Specs)</h3>
+        <h3 style="color:#f39c12; font-size: 15px; margin-top: 15px;">Ficha Técnica (Specs)</h3>
         <div class="grid-2">
           <div class="form-group">
-            <label>Motor:</label>
-            <input type="text" id="specMotor" placeholder="ej. 1.5L 4Cil">
+            <label>Color:</label>
+            <input type="text" id="specColor" required placeholder="ej. Blanco">
           </div>
           <div class="form-group">
-            <label>Transmisión:</label>
-            <input type="text" id="specTransmision" placeholder="ej. Automática / Manual">
+            <label>Motor:</label>
+            <input type="text" id="specMotor" required placeholder="ej. 1.5L 4 cil.">
           </div>
         </div>
         <div class="grid-2">
           <div class="form-group">
             <label>Potencia:</label>
-            <input type="text" id="specPotencia" placeholder="ej. 116 HP">
+            <input type="text" id="specPotencia" required placeholder="ej. 113 hp">
           </div>
           <div class="form-group">
             <label>Tracción:</label>
-            <input type="text" id="specTraccion" placeholder="ej. FWD 4x2">
+            <input type="text" id="specTraccion" required placeholder="ej. Delantera">
           </div>
         </div>
-        <div class="form-group">
-          <label>Color:</label>
-          <input type="text" id="specColor" placeholder="ej. Blanco Plata">
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Kilometraje (km):</label>
+            <input type="number" id="km" required placeholder="ej. 42000">
+          </div>
+          <div class="form-group">
+            <label>Transmisión:</label>
+            <input type="text" id="specTransmision" required placeholder="ej. CVT / Automática">
+          </div>
         </div>
 
         <!-- FOTOS -->
@@ -270,6 +276,16 @@
       return publicUrlData.publicUrl;
     }
 
+    function formatearMoneda(val) {
+      const num = parseInt(val) || 0;
+      return '$' + num.toLocaleString('en-US') + ' MXN';
+    }
+
+    function formatearKm(val) {
+      const num = parseInt(val) || 0;
+      return num.toLocaleString('en-US') + ' km';
+    }
+
     async function prepararEdicion(id) {
       const carro = inventarioLocal.find(item => item.id == id);
       if (!carro) return;
@@ -284,12 +300,18 @@
       document.getElementById('anio').value = carro.anio || '';
       
       const specs = carro.specs || {};
-      document.getElementById('km').value = specs.km || '';
-      document.getElementById('specMotor').value = specs.motor || '';
-      document.getElementById('specTransmision').value = specs.transmision || '';
-      document.getElementById('specPotencia').value = specs.potencia || '';
-      document.getElementById('specTraccion').value = specs.traccion || '';
-      document.getElementById('specColor').value = specs.color || '';
+      
+      // Limpiar formatos para que en los inputs solo salgan números
+      const rawPrecio = specs["Precio"] ? specs["Precio"].replace(/[^0-9]/g, '') : '';
+      const rawKm = specs["Kilometraje"] ? specs["Kilometraje"].replace(/[^0-9]/g, '') : (specs.km || '');
+
+      document.getElementById('specPrecio').value = rawPrecio;
+      document.getElementById('km').value = rawKm;
+      document.getElementById('specColor').value = specs["Color"] || specs.color || '';
+      document.getElementById('specMotor').value = specs["Motor"] || specs.motor || '';
+      document.getElementById('specPotencia').value = specs["Potencia"] || specs.potencia || '';
+      document.getElementById('specTraccion').value = specs["Tracción"] || specs.traccion || '';
+      document.getElementById('specTransmision').value = specs["Transmisión"] || specs.transmision || '';
 
       document.getElementById('descripcion').value = carro.descripcion || '';
 
@@ -342,13 +364,18 @@
           fotosGaleriaUrls = nuevasFotos;
         }
 
+        const rawPrecio = document.getElementById('specPrecio').value;
+        const rawKm = document.getElementById('km').value;
+
+        // Construir el objeto exactamente como se requiere en la imagen
         const specsJson = {
-          km: parseInt(document.getElementById('km').value) || 0,
-          motor: document.getElementById('specMotor').value.trim(),
-          transmision: document.getElementById('specTransmision').value.trim(),
-          potencia: document.getElementById('specPotencia').value.trim(),
-          traccion: document.getElementById('specTraccion').value.trim(),
-          color: document.getElementById('specColor').value.trim()
+          "Color": document.getElementById('specColor').value.trim(),
+          "Motor": document.getElementById('specMotor').value.trim(),
+          "Precio": formatearMoneda(rawPrecio),
+          "Potencia": document.getElementById('specPotencia').value.trim(),
+          "Tracción": document.getElementById('specTraccion').value.trim(),
+          "Kilometraje": formatearKm(rawKm),
+          "Transmisión": document.getElementById('specTransmision').value.trim()
         };
 
         const datosCarro = {
@@ -437,14 +464,4 @@
       const link = document.createElement('a');
       link.href = imageSrc;
       link.download = `QR_Auto_${idActualQR}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-
-    function cerrarQR() {
-      document.getElementById('qrModal').style.display = 'none';
-    }
-  </script>
-</body>
-</html>
+      document.
