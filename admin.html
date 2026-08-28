@@ -165,6 +165,8 @@
       <h3 id="qrTitulo" style="margin-top:0;">Ficha del Auto</h3>
       <div id="qrcode" style="display:flex; justify-content:center; margin: 15px 0;"></div>
       <p style="font-size: 12px;">Escanéame para ver detalles completos en línea</p>
+      
+      <button onclick="descargarQR()" class="no-print" style="margin-bottom:8px; background:#3498db; color:#fff;">💾 Descargar Imagen QR</button>
       <button onclick="window.print()" class="no-print" style="margin-bottom:8px; background:#27ae60; color:#fff;">🖨️ Imprimir QR</button>
       <button onclick="cerrarQR()" class="no-print btn-del">Cerrar</button>
     </div>
@@ -177,8 +179,10 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     const BASE_URL_CATALOGO = "https://roasaldivar28-dev.github.io/Cat-logo/";
 
-    let editandoId = null; // Guarda el ID de la unidad si está en modo edición
+    let editandoId = null;
     let fotosExistentes = { portada: '', galeria: [] };
+    let idActualQR = '';
+    let inventarioLocal = [];
 
     // Estado de sesión
     document.addEventListener("DOMContentLoaded", async () => {
@@ -232,6 +236,8 @@
         return;
       }
 
+      inventarioLocal = carros || [];
+
       if(!carros || carros.length === 0) {
         contenedor.innerHTML = "<p>No hay carros registrados aún.</p>";
         return;
@@ -248,7 +254,7 @@
             <button class="btn-sm btn-disp" onclick="cambiarEstado('${c.id}', 'DISPONIBLE')">Dispo</button>
             <button class="btn-sm btn-apar" onclick="cambiarEstado('${c.id}', 'APARTADO')">Apart</button>
             <button class="btn-sm btn-vend" onclick="cambiarEstado('${c.id}', 'VENDIDO')">Vend</button>
-            <button class="btn-sm btn-qr" onclick="generarQR('${c.id}', '${c.marca} ${c.modelo}')">QR</button>
+            <button class="btn-sm btn-qr" onclick="generarQR('${c.id}')">QR</button>
             <button class="btn-sm btn-del" onclick="eliminarCarro('${c.id}')">🗑️</button>
           </div>
         </div>
@@ -264,20 +270,15 @@
       return publicUrlData.publicUrl;
     }
 
-    // Cargar datos en el formulario para editar
     async function prepararEdicion(id) {
-      const { data: carro, error } = await supabaseClient.from('carros').select('*').eq('id', id).single();
-      if (error || !carro) {
-        alert("Error al obtener la información del carro.");
-        return;
-      }
+      const carro = inventarioLocal.find(item => item.id == id);
+      if (!carro) return;
 
       editandoId = id;
       fotosExistentes = { portada: carro.portada || '', galeria: carro.fotos || [] };
 
-      // Llenar campos
       document.getElementById('id').value = carro.id;
-      document.getElementById('id').disabled = true; // No permitir cambiar la clave principal
+      document.getElementById('id').disabled = true;
       document.getElementById('marca').value = carro.marca || '';
       document.getElementById('modelo').value = carro.modelo || '';
       document.getElementById('anio').value = carro.anio || '';
@@ -292,7 +293,6 @@
 
       document.getElementById('descripcion').value = carro.descripcion || '';
 
-      // Cambiar interfaz
       document.getElementById('formTitle').innerText = `Editar Unidad #${id}`;
       document.getElementById('btnGuardar').innerText = "Actualizar Unidad";
       document.getElementById('btnCancelar').style.display = "block";
@@ -314,7 +314,6 @@
       document.getElementById('lblGaleria').innerText = "Galería de Fotos (puedes seleccionar varias):";
     }
 
-    // Guardar o Actualizar Vehículo
     document.getElementById('carForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('btnGuardar');
@@ -328,14 +327,12 @@
         let portadaUrl = fotosExistentes.portada;
         let fotosGaleriaUrls = fotosExistentes.galeria;
 
-        // 1. Si seleccionó nueva foto de portada, subirla
         if (portadaInput.files.length > 0) {
           portadaUrl = await subirImagen(portadaInput.files[0]);
         } else if (!editandoId && portadaInput.files.length === 0) {
           throw new Error("Debes seleccionar una foto de portada.");
         }
 
-        // 2. Si seleccionó nuevas fotos de galería, subirlas
         if (galeriaInput.files.length > 0) {
           const nuevasFotos = [];
           for (let i = 0; i < galeriaInput.files.length; i++) {
@@ -345,7 +342,6 @@
           fotosGaleriaUrls = nuevasFotos;
         }
 
-        // 3. Objeto Specs en JSON
         const specsJson = {
           motor: document.getElementById('specMotor').value.trim(),
           transmision: document.getElementById('specTransmision').value.trim(),
@@ -354,7 +350,6 @@
           color: document.getElementById('specColor').value.trim()
         };
 
-        // 4. Datos del Auto
         const datosCarro = {
           id: document.getElementById('id').value.trim(),
           marca: document.getElementById('marca').value.trim(),
@@ -368,12 +363,10 @@
         };
 
         if (editandoId) {
-          // Actualización
           const { error: updateError } = await supabaseClient.from('carros').update(datosCarro).eq('id', editandoId);
           if (updateError) throw updateError;
           alert("¡Unidad actualizada correctamente!");
         } else {
-          // Creación nueva
           datosCarro.estado = 'DISPONIBLE';
           const { error: insertError } = await supabaseClient.from('carros').insert([datosCarro]);
           if (insertError) throw insertError;
@@ -404,8 +397,12 @@
       }
     }
 
-    function generarQR(id, nombre) {
-      document.getElementById('qrTitulo').innerText = `${nombre} (#${id})`;
+    function generarQR(id) {
+      idActualQR = id;
+      const carro = inventarioLocal.find(item => item.id == id);
+      const nombreAuto = carro ? `${carro.marca} ${carro.modelo}` : `Unidad`;
+
+      document.getElementById('qrTitulo').innerText = `${nombreAuto} (#${id})`;
       document.getElementById('qrcode').innerHTML = "";
       
       const linkCarro = `${BASE_URL_CATALOGO}#carro-${id}`;
@@ -417,6 +414,32 @@
       });
 
       document.getElementById('qrModal').style.display = 'flex';
+    }
+
+    function descargarQR() {
+      const qrContainer = document.getElementById('qrcode');
+      const img = qrContainer.querySelector('img');
+      const canvas = qrContainer.querySelector('canvas');
+
+      let imageSrc = "";
+
+      if (img && img.src) {
+        imageSrc = img.src;
+      } else if (canvas) {
+        imageSrc = canvas.toDataURL("image/png");
+      }
+
+      if (!imageSrc) {
+        alert("El código QR aún se está generando, intenta de nuevo.");
+        return;
+      }
+
+      const link = document.createElement('a');
+      link.href = imageSrc;
+      link.download = `QR_Auto_${idActualQR}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
 
     function cerrarQR() {
