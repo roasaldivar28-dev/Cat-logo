@@ -468,4 +468,25 @@
       if (img && img.src) {
         imageSrc = img.src;
       } else if (canvas) {
-        image
+        imageSrc = canvas.toDataURL("image/png");
+      }
+
+      if (!imageSrc) {
+        alert("El código QR aún se está generando, intenta de nuevo.");
+        return;
+      }
+
+      const link = document.createElement('a');
+      link.href = imageSrc;
+      link.download = `QR_Auto_${idActualQR}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function cerrarQR() {
+      document.getElementById('qrModal').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
