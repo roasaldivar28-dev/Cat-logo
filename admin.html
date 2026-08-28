@@ -10,10 +10,14 @@
     h1, h2 { color: #f39c12; text-align: center; }
     .card { background: #14171a; padding: 20px; border-radius: 8px; border: 1px solid #262b30; margin-bottom: 25px; }
     .form-group { margin-bottom: 12px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     label { display: block; margin-bottom: 4px; font-weight: bold; color: #ccc; font-size: 14px; }
     input, textarea, select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #262b30; background: #1b1f23; color: #fff; }
+    input:disabled { background: #0f1113; color: #777; cursor: not-allowed; }
     button { background: #f39c12; color: #000; font-weight: bold; padding: 12px; border: none; width: 100%; border-radius: 6px; cursor: pointer; font-size: 15px; }
     button:hover { background: #e08e0b; }
+    .btn-cancel { background: #555; color: #fff; margin-top: 8px; }
+    .btn-cancel:hover { background: #666; }
     
     #loginCard { max-width: 400px; margin: 50px auto; }
     #adminPanel { display: none; }
@@ -24,11 +28,12 @@
     .item-info { flex: 1; min-width: 200px; }
     .item-actions { display: flex; gap: 6px; flex-wrap: wrap; }
     .btn-sm { padding: 6px 10px; font-size: 12px; border-radius: 4px; width: auto; font-weight: bold; }
+    .btn-edit { background: #3498db; color: #fff; }
     .btn-disp { background: #27ae60; color: #fff; }
     .btn-apar { background: #f39c12; color: #000; }
     .btn-vend { background: #e74c3c; color: #fff; }
     .btn-del { background: #7f8c8d; color: #fff; }
-    .btn-qr { background: #3498db; color: #fff; }
+    .btn-qr { background: #9b59b6; color: #fff; }
 
     #qrModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 1000; }
     .modal-content { background: #fff; color: #000; padding: 20px; border-radius: 8px; text-align: center; max-width: 320px; }
@@ -67,43 +72,83 @@
       <button onclick="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
     </div>
 
-    <!-- FORMULARIO DE REGISTRO -->
+    <!-- FORMULARIO DE REGISTRO / EDICIÓN -->
     <div class="card">
-      <h2>Agregar Nueva Unidad</h2>
+      <h2 id="formTitle">Agregar Nueva Unidad</h2>
       <form id="carForm">
         <div class="form-group">
           <label>ID / Clave (#X35, #A3):</label>
           <input type="text" id="id" required placeholder="ej. X35">
         </div>
-        <div class="form-group">
-          <label>Marca:</label>
-          <input type="text" id="marca" required placeholder="ej. BAIC">
+        
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Marca:</label>
+            <input type="text" id="marca" required placeholder="ej. BAIC">
+          </div>
+          <div class="form-group">
+            <label>Modelo:</label>
+            <input type="text" id="modelo" required placeholder="ej. X35">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Año:</label>
+            <input type="number" id="anio" required placeholder="ej. 2023">
+          </div>
+          <div class="form-group">
+            <label>Kilometraje (km):</label>
+            <input type="number" id="km" required placeholder="ej. 42000">
+          </div>
+        </div>
+
+        <!-- ESPECIFICACIONES TÉCNICAS (SPECS) -->
+        <h3 style="color:#f39c12; font-size: 15px; margin-top: 15px;">Especificaciones Técnicas (Specs)</h3>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Motor:</label>
+            <input type="text" id="specMotor" placeholder="ej. 1.5L 4Cil">
+          </div>
+          <div class="form-group">
+            <label>Transmisión:</label>
+            <input type="text" id="specTransmision" placeholder="ej. Automática / Manual">
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Potencia:</label>
+            <input type="text" id="specPotencia" placeholder="ej. 116 HP">
+          </div>
+          <div class="form-group">
+            <label>Tracción:</label>
+            <input type="text" id="specTraccion" placeholder="ej. FWD 4x2">
+          </div>
         </div>
         <div class="form-group">
-          <label>Modelo:</label>
-          <input type="text" id="modelo" required placeholder="ej. X35">
+          <label>Color:</label>
+          <input type="text" id="specColor" placeholder="ej. Blanco Plata">
+        </div>
+
+        <!-- FOTOS -->
+        <h3 style="color:#f39c12; font-size: 15px; margin-top: 15px;">Fotografías</h3>
+        <div class="form-group">
+          <label id="lblPortada">Foto de Portada (1 sola foto principal):</label>
+          <input type="file" id="fotoPortada" accept="image/*">
         </div>
         <div class="form-group">
-          <label>Año:</label>
-          <input type="number" id="anio" required placeholder="ej. 2023">
-        </div>
-        <div class="form-group">
-          <label>Kilometraje (km):</label>
-          <input type="number" id="km" required placeholder="ej. 42000">
-        </div>
-        <div class="form-group">
-          <label>Foto de Portada (1 sola foto principal):</label>
-          <input type="file" id="fotoPortada" accept="image/*" required>
-        </div>
-        <div class="form-group">
-          <label>Galería de Fotos (puedes seleccionar varias):</label>
+          <label id="lblGaleria">Galería de Fotos (puedes seleccionar varias):</label>
           <input type="file" id="fotosGaleria" accept="image/*" multiple>
         </div>
+
+        <!-- DESCRIPCIÓN Y PUNTOS CLAVE -->
         <div class="form-group">
-          <label>Especificaciones / Puntos clave (separados por coma):</label>
-          <textarea id="descripcion" rows="3" placeholder="Factura Original, Único dueño, Motor 1.5L, Transmisión Automática"></textarea>
+          <label>Descripción / Puntos Clave (separados por coma):</label>
+          <textarea id="descripcion" rows="3" placeholder="Factura Original, Único dueño, Servicios de agencia, Pagos al corriente"></textarea>
         </div>
+
         <button type="submit" id="btnGuardar">Guardar y Publicar</button>
+        <button type="button" id="btnCancelar" class="btn-cancel" style="display:none;" onclick="cancelarEdicion()">Cancelar Edición</button>
       </form>
     </div>
 
@@ -131,6 +176,9 @@
     
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     const BASE_URL_CATALOGO = "https://roasaldivar28-dev.github.io/Cat-logo/";
+
+    let editandoId = null; // Guarda el ID de la unidad si está en modo edición
+    let fotosExistentes = { portada: '', galeria: [] };
 
     // Estado de sesión
     document.addEventListener("DOMContentLoaded", async () => {
@@ -196,6 +244,7 @@
             <small>Estado: <span style="color:#f39c12">${c.estado || 'DISPONIBLE'}</span></small>
           </div>
           <div class="item-actions">
+            <button class="btn-sm btn-edit" onclick="prepararEdicion('${c.id}')">✏️ Editar</button>
             <button class="btn-sm btn-disp" onclick="cambiarEstado('${c.id}', 'DISPONIBLE')">Dispo</button>
             <button class="btn-sm btn-apar" onclick="cambiarEstado('${c.id}', 'APARTADO')">Apart</button>
             <button class="btn-sm btn-vend" onclick="cambiarEstado('${c.id}', 'VENDIDO')">Vend</button>
@@ -206,7 +255,6 @@
       `).join('');
     }
 
-    // Subir archivo individual a Supabase Storage
     async function subirImagen(file) {
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}_${file.name.replace(/\s+/g, '_')}`;
       const { error: storageError } = await supabaseClient.storage.from('fotos-carros').upload(fileName, file);
@@ -216,50 +264,128 @@
       return publicUrlData.publicUrl;
     }
 
-    // Guardar Vehículo (Portada, Galería y Specs)
+    // Cargar datos en el formulario para editar
+    async function prepararEdicion(id) {
+      const { data: carro, error } = await supabaseClient.from('carros').select('*').eq('id', id).single();
+      if (error || !carro) {
+        alert("Error al obtener la información del carro.");
+        return;
+      }
+
+      editandoId = id;
+      fotosExistentes = { portada: carro.portada || '', galeria: carro.fotos || [] };
+
+      // Llenar campos
+      document.getElementById('id').value = carro.id;
+      document.getElementById('id').disabled = true; // No permitir cambiar la clave principal
+      document.getElementById('marca').value = carro.marca || '';
+      document.getElementById('modelo').value = carro.modelo || '';
+      document.getElementById('anio').value = carro.anio || '';
+      document.getElementById('km').value = carro.km || '';
+
+      const specs = carro.specs || {};
+      document.getElementById('specMotor').value = specs.motor || '';
+      document.getElementById('specTransmision').value = specs.transmision || '';
+      document.getElementById('specPotencia').value = specs.potencia || '';
+      document.getElementById('specTraccion').value = specs.traccion || '';
+      document.getElementById('specColor').value = specs.color || '';
+
+      document.getElementById('descripcion').value = carro.descripcion || '';
+
+      // Cambiar interfaz
+      document.getElementById('formTitle').innerText = `Editar Unidad #${id}`;
+      document.getElementById('btnGuardar').innerText = "Actualizar Unidad";
+      document.getElementById('btnCancelar').style.display = "block";
+      document.getElementById('lblPortada').innerText = "Foto de Portada (deja vacío para conservar la actual):";
+      document.getElementById('lblGaleria').innerText = "Galería de Fotos (deja vacío para conservar las actuales):";
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function cancelarEdicion() {
+      editandoId = null;
+      fotosExistentes = { portada: '', galeria: [] };
+      document.getElementById('carForm').reset();
+      document.getElementById('id').disabled = false;
+      document.getElementById('formTitle').innerText = "Agregar Nueva Unidad";
+      document.getElementById('btnGuardar').innerText = "Guardar y Publicar";
+      document.getElementById('btnCancelar').style.display = "none";
+      document.getElementById('lblPortada').innerText = "Foto de Portada (1 sola foto principal):";
+      document.getElementById('lblGaleria').innerText = "Galería de Fotos (puedes seleccionar varias):";
+    }
+
+    // Guardar o Actualizar Vehículo
     document.getElementById('carForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('btnGuardar');
-      btn.innerText = "Subiendo fotos y guardando...";
+      btn.innerText = "Procesando...";
       btn.disabled = true;
 
       try {
-        // 1. Subir Portada
         const portadaInput = document.getElementById('fotoPortada');
-        const portadaUrl = await subirImagen(portadaInput.files[0]);
-
-        // 2. Subir Galería (Múltiples fotos)
         const galeriaInput = document.getElementById('fotosGaleria');
-        const fotosGaleriaUrls = [];
-        for (let i = 0; i < galeriaInput.files.length; i++) {
-          const url = await subirImagen(galeriaInput.files[i]);
-          fotosGaleriaUrls.push(url);
+
+        let portadaUrl = fotosExistentes.portada;
+        let fotosGaleriaUrls = fotosExistentes.galeria;
+
+        // 1. Si seleccionó nueva foto de portada, subirla
+        if (portadaInput.files.length > 0) {
+          portadaUrl = await subirImagen(portadaInput.files[0]);
+        } else if (!editandoId && portadaInput.files.length === 0) {
+          throw new Error("Debes seleccionar una foto de portada.");
         }
 
-        // 3. Insertar en tabla carros
-        const nuevoCarro = {
+        // 2. Si seleccionó nuevas fotos de galería, subirlas
+        if (galeriaInput.files.length > 0) {
+          const nuevasFotos = [];
+          for (let i = 0; i < galeriaInput.files.length; i++) {
+            const url = await subirImagen(galeriaInput.files[i]);
+            nuevasFotos.push(url);
+          }
+          fotosGaleriaUrls = nuevasFotos;
+        }
+
+        // 3. Objeto Specs en JSON
+        const specsJson = {
+          motor: document.getElementById('specMotor').value.trim(),
+          transmision: document.getElementById('specTransmision').value.trim(),
+          potencia: document.getElementById('specPotencia').value.trim(),
+          traccion: document.getElementById('specTraccion').value.trim(),
+          color: document.getElementById('specColor').value.trim()
+        };
+
+        // 4. Datos del Auto
+        const datosCarro = {
           id: document.getElementById('id').value.trim(),
           marca: document.getElementById('marca').value.trim(),
           modelo: document.getElementById('modelo').value.trim(),
           anio: parseInt(document.getElementById('anio').value),
           km: parseInt(document.getElementById('km').value),
-          estado: 'DISPONIBLE',
           portada: portadaUrl,
           fotos: fotosGaleriaUrls,
+          specs: specsJson,
           descripcion: document.getElementById('descripcion').value.trim()
         };
 
-        const { error: insertError } = await supabaseClient.from('carros').insert([nuevoCarro]);
+        if (editandoId) {
+          // Actualización
+          const { error: updateError } = await supabaseClient.from('carros').update(datosCarro).eq('id', editandoId);
+          if (updateError) throw updateError;
+          alert("¡Unidad actualizada correctamente!");
+        } else {
+          // Creación nueva
+          datosCarro.estado = 'DISPONIBLE';
+          const { error: insertError } = await supabaseClient.from('carros').insert([datosCarro]);
+          if (insertError) throw insertError;
+          alert("¡Vehículo publicado correctamente!");
+        }
 
-        if (insertError) throw insertError;
-
-        alert("¡Vehículo publicado correctamente!");
-        document.getElementById('carForm').reset();
+        cancelarEdicion();
         cargarInventario();
       } catch (err) {
         alert("Error: " + err.message);
       } finally {
-        btn.innerText = "Guardar y Publicar";
+        btn.innerText = editandoId ? "Actualizar Unidad" : "Guardar y Publicar";
         btn.disabled = false;
       }
     });
