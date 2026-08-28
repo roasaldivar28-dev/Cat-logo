@@ -15,13 +15,11 @@
     button { background: #f39c12; color: #000; font-weight: bold; padding: 12px; border: none; width: 100%; border-radius: 6px; cursor: pointer; font-size: 15px; }
     button:hover { background: #e08e0b; }
     
-    /* Login */
     #loginCard { max-width: 400px; margin: 50px auto; }
     #adminPanel { display: none; }
     .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .btn-logout { background: #e74c3c; color: #fff; width: auto; padding: 8px 15px; }
 
-    /* Lista de Inventario */
     .item-row { display: flex; align-items: center; justify-content: space-between; background: #1b1f23; padding: 12px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #262b30; flex-wrap: wrap; gap: 10px; }
     .item-info { flex: 1; min-width: 200px; }
     .item-actions { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -32,7 +30,6 @@
     .btn-del { background: #7f8c8d; color: #fff; }
     .btn-qr { background: #3498db; color: #fff; }
 
-    /* Modal de QR */
     #qrModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 1000; }
     .modal-content { background: #fff; color: #000; padding: 20px; border-radius: 8px; text-align: center; max-width: 320px; }
     @media print {
@@ -47,7 +44,7 @@
 </head>
 <body>
 
-  <!-- PANTALLA DE INICIO DE SESIÓN -->
+  <!-- INICIO DE SESIÓN -->
   <div id="loginCard" class="card">
     <h2>Iniciar Sesión</h2>
     <form id="loginForm">
@@ -63,7 +60,7 @@
     </form>
   </div>
 
-  <!-- PANEL DE ADMINISTRACIÓN COMPLETO -->
+  <!-- PANEL DE ADMINISTRACIÓN -->
   <div id="adminPanel">
     <div class="header-bar">
       <h1>PANEL DE ADMINISTRACIÓN</h1>
@@ -95,12 +92,16 @@
           <input type="number" id="km" required placeholder="ej. 42000">
         </div>
         <div class="form-group">
-          <label>Foto Principal:</label>
-          <input type="file" id="fotoFile" accept="image/*" required>
+          <label>Foto de Portada (1 sola foto principal):</label>
+          <input type="file" id="fotoPortada" accept="image/*" required>
         </div>
         <div class="form-group">
-          <label>Descripción / Puntos clave (separados por coma):</label>
-          <textarea id="descripcion" rows="2" placeholder="Factura Original, Único dueño, Pagos al corriente"></textarea>
+          <label>Galería de Fotos (puedes seleccionar varias):</label>
+          <input type="file" id="fotosGaleria" accept="image/*" multiple>
+        </div>
+        <div class="form-group">
+          <label>Especificaciones / Puntos clave (separados por coma):</label>
+          <textarea id="descripcion" rows="3" placeholder="Factura Original, Único dueño, Motor 1.5L, Transmisión Automática"></textarea>
         </div>
         <button type="submit" id="btnGuardar">Guardar y Publicar</button>
       </form>
@@ -131,18 +132,13 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     const BASE_URL_CATALOGO = "https://roasaldivar28-dev.github.io/Cat-logo/";
 
-    // 1. Control de Estado de Sesión al iniciar la página
+    // Estado de sesión
     document.addEventListener("DOMContentLoaded", async () => {
       const { data: { session } } = await supabaseClient.auth.getSession();
-      
-      if (session) {
-        mostrarPanel();
-      } else {
-        mostrarLogin();
-      }
+      if (session) mostrarPanel();
+      else mostrarLogin();
     });
 
-    // Evento de Login
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('btnLogin');
@@ -152,10 +148,7 @@
       const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value.trim();
 
-      const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email: email,
-        password: password
-      });
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
       if (error) {
         alert("Error al iniciar sesión: " + error.message);
@@ -166,7 +159,6 @@
       }
     });
 
-    // Cerrar Sesión
     async function cerrarSesion() {
       await supabaseClient.auth.signOut();
       mostrarLogin();
@@ -183,7 +175,6 @@
       document.getElementById('adminPanel').style.display = 'none';
     }
 
-    // 2. Cargar Inventario
     async function cargarInventario() {
       const contenedor = document.getElementById('listaInventario');
       const { data: carros, error } = await supabaseClient.from('carros').select('*');
@@ -215,28 +206,37 @@
       `).join('');
     }
 
-    // 3. Guardar vehículo + Subir Foto
+    // Subir archivo individual a Supabase Storage
+    async function subirImagen(file) {
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}_${file.name.replace(/\s+/g, '_')}`;
+      const { error: storageError } = await supabaseClient.storage.from('fotos-carros').upload(fileName, file);
+      if (storageError) throw storageError;
+
+      const { data: publicUrlData } = supabaseClient.storage.from('fotos-carros').getPublicUrl(fileName);
+      return publicUrlData.publicUrl;
+    }
+
+    // Guardar Vehículo (Portada, Galería y Specs)
     document.getElementById('carForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('btnGuardar');
-      btn.innerText = "Subiendo foto y guardando...";
+      btn.innerText = "Subiendo fotos y guardando...";
       btn.disabled = true;
 
       try {
-        const fileInput = document.getElementById('fotoFile');
-        const file = fileInput.files[0];
-        const fileName = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+        // 1. Subir Portada
+        const portadaInput = document.getElementById('fotoPortada');
+        const portadaUrl = await subirImagen(portadaInput.files[0]);
 
-        const { data: storageData, error: storageError } = await supabaseClient
-          .storage
-          .from('fotos-carros')
-          .upload(fileName, file);
+        // 2. Subir Galería (Múltiples fotos)
+        const galeriaInput = document.getElementById('fotosGaleria');
+        const fotosGaleriaUrls = [];
+        for (let i = 0; i < galeriaInput.files.length; i++) {
+          const url = await subirImagen(galeriaInput.files[i]);
+          fotosGaleriaUrls.push(url);
+        }
 
-        if (storageError) throw storageError;
-
-        const { data: publicUrlData } = supabaseClient.storage.from('fotos-carros').getPublicUrl(fileName);
-        const fotoUrl = publicUrlData.publicUrl;
-
+        // 3. Insertar en tabla carros
         const nuevoCarro = {
           id: document.getElementById('id').value.trim(),
           marca: document.getElementById('marca').value.trim(),
@@ -244,7 +244,8 @@
           anio: parseInt(document.getElementById('anio').value),
           km: parseInt(document.getElementById('km').value),
           estado: 'DISPONIBLE',
-          portada: fotoUrl,
+          portada: portadaUrl,
+          fotos: fotosGaleriaUrls,
           descripcion: document.getElementById('descripcion').value.trim()
         };
 
@@ -263,14 +264,12 @@
       }
     });
 
-    // 4. Cambiar Estado
     async function cambiarEstado(id, nuevoEstado) {
       const { error } = await supabaseClient.from('carros').update({ estado: nuevoEstado }).eq('id', id);
       if(error) alert("Error al actualizar estado: " + error.message);
       else cargarInventario();
     }
 
-    // 5. Eliminar Carro
     async function eliminarCarro(id) {
       if(confirm(`¿Seguro que deseas eliminar el carro #${id}?`)) {
         const { error } = await supabaseClient.from('carros').delete().eq('id', id);
@@ -279,7 +278,6 @@
       }
     }
 
-    // 6. Generar QR
     function generarQR(id, nombre) {
       document.getElementById('qrTitulo').innerText = `${nombre} (#${id})`;
       document.getElementById('qrcode').innerHTML = "";
@@ -301,4 +299,3 @@
   </script>
 </body>
 </html>
-
