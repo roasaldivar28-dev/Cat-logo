@@ -457,343 +457,377 @@
     </div>
   </div>
 
-  <script>
-    const SUPABASE_URL = "https://xkhoorjntavmzhuikauj.supabase.co"; 
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhraG9vcmpudGF2bXpodWlrYXVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3ODY2OTMsImV4cCI6MjEwMzM2MjY5M30.PHBKRKmvDtFMSE0Csy01Qo82s9e8DKXWBicf7JrSHz4"; 
-    
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const BASE_URL_CATALOGO = "https://roasaldivar28-dev.github.io/Cat-logo/";
+<script>
+  const SUPABASE_URL = "https://xkhoorjntavmzhuikauj.supabase.co"; 
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhraG9vcmpudGF2bXpodWlrYXVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3ODY2OTMsImV4cCI6MjEwMzM2MjY5M30.PHBKRKmvDtFMSE0Csy01Qo82s9e8DKXWBicf7JrSHz4"; 
+  
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const BASE_URL_CATALOGO = "https://roasaldivar28-dev.github.io/Cat-logo/";
 
-    let editandoId = null;
-    let fotosExistentes = { portada: '', galeria: [] };
-    let idActualQR = '';
-    let inventarioLocal = [];
+  let editandoId = null;
+  let fotosExistentes = { portada: '', galeria: [] };
+  let idActualQR = '';
+  let inventarioLocal = [];
 
-    document.addEventListener("DOMContentLoaded", async () => {
-      try {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session) mostrarPanel();
-        else mostrarLogin();
-      } catch (err) {
-        console.error("Error comprobando sesión:", err);
-        mostrarLogin();
-      }
-    });
-
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('btnLogin');
-      btn.innerText = "Iniciando sesión...";
-      btn.disabled = true;
-
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value.trim();
-
-      try {
-        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-
-        if (error) {
-          alert("Error de autenticación: " + error.message);
-          btn.innerText = "Entrar al Panel";
-          btn.disabled = false;
-        } else {
-          mostrarPanel();
-        }
-      } catch (err) {
-        alert("Error de conexión: " + err.message);
-        btn.innerText = "Entrar al Panel";
-        btn.disabled = false;
-      }
-    });
-
-    async function cerrarSesion() {
-      await supabaseClient.auth.signOut();
+  // 1. Manejo dinámico del estado de autenticación de Supabase
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      mostrarPanel();
+    } else if (event === 'SIGNED_OUT' || !session) {
       mostrarLogin();
     }
+  });
 
-    function mostrarPanel() {
-      document.getElementById('loginCard').style.display = 'none';
-      document.getElementById('adminPanel').style.display = 'block';
-      cargarInventario();
-    }
-
-    function mostrarLogin() {
-      document.getElementById('loginCard').style.display = 'block';
-      document.getElementById('adminPanel').style.display = 'none';
-    }
-
-    async function cargarInventario() {
-      const contenedor = document.getElementById('listaInventario');
-      
+  document.addEventListener("DOMContentLoaded", async () => {
+    try {
       const { data: { session } } = await supabaseClient.auth.getSession();
-      if (!session) return;
-
-      const { data: carros, error } = await supabaseClient
-        .from('carros')
-        .select('*')
-        .eq('empresa_id', session.user.id);
-
-      if(error) {
-        contenedor.innerHTML = "<p style='color:#c26a66'>Error al cargar inventario: " + error.message + "</p>";
-        return;
+      if (session) {
+        mostrarPanel();
+      } else {
+        mostrarLogin();
       }
+    } catch (err) {
+      console.error("Error comprobando sesión:", err);
+      mostrarLogin();
+    }
+  });
 
-      inventarioLocal = carros || [];
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnLogin');
+    btn.innerText = "Iniciando sesión...";
+    btn.disabled = true;
 
-      if(!carros || carros.length === 0) {
-        contenedor.innerHTML = "<p>No hay carros registrados aún.</p>";
-        return;
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+
+    try {
+      // Intentar cerrar cualquier sesión residual activa antes de iniciar una nueva
+      await supabaseClient.auth.signOut();
+
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        alert("Error de autenticación: " + error.message);
+      } else {
+        mostrarPanel();
       }
-
-      contenedor.innerHTML = carros.map(c => `
-        <div class="item-row" data-estado="${c.estado || 'DISPONIBLE'}">
-          <div class="item-info">
-            <div class="item-id">#${c.id}</div>
-            <div class="item-name">${c.marca} ${c.modelo} · ${c.anio}</div>
-            <span class="item-status"><span class="dot"></span>${c.estado || 'DISPONIBLE'}</span>
-          </div>
-          <div class="item-actions">
-            <button class="btn-sm btn-edit" onclick="prepararEdicion('${c.id}')">Editar</button>
-            <button class="btn-sm btn-disp" onclick="cambiarEstado('${c.id}', 'DISPONIBLE')">Dispo</button>
-            <button class="btn-sm btn-apar" onclick="cambiarEstado('${c.id}', 'APARTADO')">Apart</button>
-            <button class="btn-sm btn-vend" onclick="cambiarEstado('${c.id}', 'VENDIDO')">Vend</button>
-            <button class="btn-sm btn-qr" onclick="generarQR('${c.id}')">QR</button>
-            <button class="btn-sm btn-del" onclick="eliminarCarro('${c.id}')">Eliminar</button>
-          </div>
-        </div>
-      `).join('');
+    } catch (err) {
+      alert("Error de conexión: " + err.message);
+    } finally {
+      btn.innerText = "Entrar al Panel";
+      btn.disabled = false;
     }
+  });
 
-    async function subirImagen(file) {
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}_${file.name.replace(/\s+/g, '_')}`;
-      const { error: storageError } = await supabaseClient.storage.from('fotos-carros').upload(fileName, file);
-      if (storageError) throw storageError;
-
-      const { data: publicUrlData } = supabaseClient.storage.from('fotos-carros').getPublicUrl(fileName);
-      return publicUrlData.publicUrl;
-    }
-
-    function formatearPrecio(val) {
-      const num = parseInt(val) || 0;
-      return '$' + num.toLocaleString('en-US') + ' MXN';
-    }
-
-    function formatearKm(val) {
-      const num = parseInt(val) || 0;
-      return num.toLocaleString('en-US') + ' km';
-    }
-
-    async function prepararEdicion(id) {
-      const carro = inventarioLocal.find(item => item.id == id);
-      if (!carro) return;
-
-      editandoId = id;
-      fotosExistentes = { portada: carro.portada || '', galeria: carro.fotos || [] };
-
-      document.getElementById('id').value = carro.id;
-      document.getElementById('id').disabled = true;
-      document.getElementById('marca').value = carro.marca || '';
-      document.getElementById('modelo').value = carro.modelo || '';
-      document.getElementById('anio').value = carro.anio || '';
-      
-      const specs = carro.specs || {};
-
-      const rawPrecio = specs["Precio"] ? specs["Precio"].replace(/[^0-9]/g, '') : '';
-      const rawKm = specs["Kilometraje"] ? specs["Kilometraje"].replace(/[^0-9]/g, '') : '';
-
-      document.getElementById('specColor').value = specs["Color"] || '';
-      document.getElementById('specMotor').value = specs["Motor"] || '';
-      document.getElementById('specPrecio').value = rawPrecio;
-      document.getElementById('specPotencia').value = specs["Potencia"] || '';
-      document.getElementById('specTraccion').value = specs["Tracción"] || '';
-      document.getElementById('specKm').value = rawKm;
-      document.getElementById('specTransmision').value = specs["Transmisión"] || '';
-
-      document.getElementById('descripcion').value = carro.descripcion || '';
-
-      document.getElementById('formTitle').innerText = `Editar Unidad #${id}`;
-      document.getElementById('btnGuardar').innerText = "Actualizar Unidad";
-      document.getElementById('btnCancelar').style.display = "block";
-      document.getElementById('lblPortada').innerText = "Foto de Portada (deja vacío para conservar la actual):";
-      document.getElementById('lblGaleria').innerText = "Galería de Fotos (deja vacío para conservar las actuales):";
-
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function cancelarEdicion() {
+  // 2. Cierre de sesión seguro y limpieza de estado
+  async function cerrarSesion() {
+    try {
+      await supabaseClient.auth.signOut();
+    } catch (err) {
+      console.error("Error al cerrar sesión:", err);
+    } finally {
+      // Limpiar datos en memoria
+      inventarioLocal = [];
       editandoId = null;
       fotosExistentes = { portada: '', galeria: [] };
-      document.getElementById('carForm').reset();
-      document.getElementById('id').disabled = false;
-      document.getElementById('formTitle').innerText = "Agregar Nueva Unidad";
-      document.getElementById('btnGuardar').innerText = "Guardar y Publicar";
-      document.getElementById('btnCancelar').style.display = "none";
-      document.getElementById('lblPortada').innerText = "Foto de Portada (1 sola foto principal):";
-      document.getElementById('lblGaleria').innerText = "Galería de Fotos (puedes seleccionar varias):";
+      
+      // Limpiar almacenamiento local y recargar vista limpiamente
+      localStorage.clear();
+      sessionStorage.clear();
+      mostrarLogin();
+    }
+  }
+
+  function mostrarPanel() {
+    document.getElementById('loginCard').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'block';
+    cargarInventario();
+  }
+
+  function mostrarLogin() {
+    document.getElementById('loginCard').style.display = 'block';
+    document.getElementById('adminPanel').style.display = 'none';
+    document.getElementById('listaInventario').innerHTML = '';
+    document.getElementById('loginForm').reset();
+  }
+
+  async function cargarInventario() {
+    const contenedor = document.getElementById('listaInventario');
+    contenedor.innerHTML = "<p>Cargando inventario...</p>";
+    
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) {
+      mostrarLogin();
+      return;
     }
 
-    document.getElementById('carForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('btnGuardar');
-      btn.innerText = "Procesando...";
-      btn.disabled = true;
+    const { data: carros, error } = await supabaseClient
+      .from('carros')
+      .select('*')
+      .eq('empresa_id', session.user.id);
 
-      try {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (!session) throw new Error("No hay sesión activa.");
+    if (error) {
+      contenedor.innerHTML = "<p style='color:#c26a66'>Error al cargar inventario: " + error.message + "</p>";
+      return;
+    }
 
-        const portadaInput = document.getElementById('fotoPortada');
-        const galeriaInput = document.getElementById('fotosGaleria');
+    inventarioLocal = carros || [];
 
-        let portadaUrl = fotosExistentes.portada;
-        let fotosGaleriaUrls = fotosExistentes.galeria;
+    if (!carros || carros.length === 0) {
+      contenedor.innerHTML = "<p>No hay carros registrados aún.</p>";
+      return;
+    }
 
-        if (portadaInput.files.length > 0) {
-          portadaUrl = await subirImagen(portadaInput.files[0]);
-        } else if (!editandoId && portadaInput.files.length === 0) {
-          throw new Error("Debes seleccionar una foto de portada.");
-        }
+    contenedor.innerHTML = carros.map(c => `
+      <div class="item-row" data-estado="${c.estado || 'DISPONIBLE'}">
+        <div class="item-info">
+          <div class="item-id">#${c.id}</div>
+          <div class="item-name">${c.marca} ${c.modelo} · ${c.anio}</div>
+          <span class="item-status"><span class="dot"></span>${c.estado || 'DISPONIBLE'}</span>
+        </div>
+        <div class="item-actions">
+          <button class="btn-sm btn-edit" onclick="prepararEdicion('${c.id}')">Editar</button>
+          <button class="btn-sm btn-disp" onclick="cambiarEstado('${c.id}', 'DISPONIBLE')">Dispo</button>
+          <button class="btn-sm btn-apar" onclick="cambiarEstado('${c.id}', 'APARTADO')">Apart</button>
+          <button class="btn-sm btn-vend" onclick="cambiarEstado('${c.id}', 'VENDIDO')">Vend</button>
+          <button class="btn-sm btn-qr" onclick="generarQR('${c.id}')">QR</button>
+          <button class="btn-sm btn-del" onclick="eliminarCarro('${c.id}')">Eliminar</button>
+        </div>
+      </div>
+    `).join('');
+  }
 
-        if (galeriaInput.files.length > 0) {
-          const nuevasFotos = [];
-          for (let i = 0; i < galeriaInput.files.length; i++) {
-            const url = await subirImagen(galeriaInput.files[i]);
-            nuevasFotos.push(url);
-          }
-          fotosGaleriaUrls = nuevasFotos;
-        }
+  async function subirImagen(file) {
+    const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}_${file.name.replace(/\s+/g, '_')}`;
+    const { error: storageError } = await supabaseClient.storage.from('fotos-carros').upload(fileName, file);
+    if (storageError) throw storageError;
 
-        const rawPrecio = document.getElementById('specPrecio').value;
-        const rawKm = document.getElementById('specKm').value;
+    const { data: publicUrlData } = supabaseClient.storage.from('fotos-carros').getPublicUrl(fileName);
+    return publicUrlData.publicUrl;
+  }
 
-        const specsJson = {
-          "Color": document.getElementById('specColor').value.trim(),
-          "Motor": document.getElementById('specMotor').value.trim(),
-          "Precio": formatearPrecio(rawPrecio),
-          "Potencia": document.getElementById('specPotencia').value.trim(),
-          "Tracción": document.getElementById('specTraccion').value.trim(),
-          "Kilometraje": formatearKm(rawKm),
-          "Transmisión": document.getElementById('specTransmision').value.trim()
-        };
+  function formatearPrecio(val) {
+    const num = parseInt(val) || 0;
+    return '$' + num.toLocaleString('en-US') + ' MXN';
+  }
 
-        const datosCarro = {
-          id: document.getElementById('id').value.trim(),
-          marca: document.getElementById('marca').value.trim(),
-          modelo: document.getElementById('modelo').value.trim(),
-          anio: parseInt(document.getElementById('anio').value),
-          portada: portadaUrl,
-          fotos: fotosGaleriaUrls,
-          specs: specsJson,
-          descripcion: document.getElementById('descripcion').value.trim(),
-          empresa_id: session.user.id
-        };
+  function formatearKm(val) {
+    const num = parseInt(val) || 0;
+    return num.toLocaleString('en-US') + ' km';
+  }
 
-        if (editandoId) {
-          const { error: updateError } = await supabaseClient
-            .from('carros')
-            .update(datosCarro)
-            .eq('id', editandoId)
-            .eq('empresa_id', session.user.id);
-            
-          if (updateError) throw updateError;
-          alert("¡Unidad actualizada correctamente!");
-        } else {
-          datosCarro.estado = 'DISPONIBLE';
-          const { error: insertError } = await supabaseClient.from('carros').insert([datosCarro]);
-          if (insertError) throw insertError;
-          alert("¡Vehículo publicado correctamente!");
-        }
+  async function prepararEdicion(id) {
+    const carro = inventarioLocal.find(item => item.id == id);
+    if (!carro) return;
 
-        cancelarEdicion();
-        cargarInventario();
-      } catch (err) {
-        alert("Error: " + err.message);
-      } finally {
-        btn.innerText = editandoId ? "Actualizar Unidad" : "Guardar y Publicar";
-        btn.disabled = false;
-      }
-    });
+    editandoId = id;
+    fotosExistentes = { portada: carro.portada || '', galeria: carro.fotos || [] };
 
-    async function cambiarEstado(id, nuevoEstado) {
+    document.getElementById('id').value = carro.id;
+    document.getElementById('id').disabled = true;
+    document.getElementById('marca').value = carro.marca || '';
+    document.getElementById('modelo').value = carro.modelo || '';
+    document.getElementById('anio').value = carro.anio || '';
+    
+    const specs = carro.specs || {};
+
+    const rawPrecio = specs["Precio"] ? specs["Precio"].replace(/[^0-9]/g, '') : '';
+    const rawKm = specs["Kilometraje"] ? specs["Kilometraje"].replace(/[^0-9]/g, '') : '';
+
+    document.getElementById('specColor').value = specs["Color"] || '';
+    document.getElementById('specMotor').value = specs["Motor"] || '';
+    document.getElementById('specPrecio').value = rawPrecio;
+    document.getElementById('specPotencia').value = specs["Potencia"] || '';
+    document.getElementById('specTraccion').value = specs["Tracción"] || '';
+    document.getElementById('specKm').value = rawKm;
+    document.getElementById('specTransmision').value = specs["Transmisión"] || '';
+
+    document.getElementById('descripcion').value = carro.descripcion || '';
+
+    document.getElementById('formTitle').innerText = `Editar Unidad #${id}`;
+    document.getElementById('btnGuardar').innerText = "Actualizar Unidad";
+    document.getElementById('btnCancelar').style.display = "block";
+    document.getElementById('lblPortada').innerText = "Foto de Portada (deja vacío para conservar la actual):";
+    document.getElementById('lblGaleria').innerText = "Galería de Fotos (deja vacío para conservar las actuales):";
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function cancelarEdicion() {
+    editandoId = null;
+    fotosExistentes = { portada: '', galeria: [] };
+    document.getElementById('carForm').reset();
+    document.getElementById('id').disabled = false;
+    document.getElementById('formTitle').innerText = "Agregar Nueva Unidad";
+    document.getElementById('btnGuardar').innerText = "Guardar y Publicar";
+    document.getElementById('btnCancelar').style.display = "none";
+    document.getElementById('lblPortada').innerText = "Foto de Portada (1 sola foto principal):";
+    document.getElementById('lblGaleria').innerText = "Galería de Fotos (puedes seleccionar varias):";
+  }
+
+  document.getElementById('carForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnGuardar');
+    btn.innerText = "Procesando...";
+    btn.disabled = true;
+
+    try {
       const { data: { session } } = await supabaseClient.auth.getSession();
-      if (!session) return;
+      if (!session) throw new Error("No hay sesión activa.");
 
+      const portadaInput = document.getElementById('fotoPortada');
+      const galeriaInput = document.getElementById('fotosGaleria');
+
+      let portadaUrl = fotosExistentes.portada;
+      let fotosGaleriaUrls = fotosExistentes.galeria;
+
+      if (portadaInput.files.length > 0) {
+        portadaUrl = await subirImagen(portadaInput.files[0]);
+      } else if (!editandoId && portadaInput.files.length === 0) {
+        throw new Error("Debes seleccionar una foto de portada.");
+      }
+
+      if (galeriaInput.files.length > 0) {
+        const nuevasFotos = [];
+        for (let i = 0; i < galeriaInput.files.length; i++) {
+          const url = await subirImagen(galeriaInput.files[i]);
+          nuevasFotos.push(url);
+        }
+        fotosGaleriaUrls = nuevasFotos;
+      }
+
+      const rawPrecio = document.getElementById('specPrecio').value;
+      const rawKm = document.getElementById('specKm').value;
+
+      const specsJson = {
+        "Color": document.getElementById('specColor').value.trim(),
+        "Motor": document.getElementById('specMotor').value.trim(),
+        "Precio": formatearPrecio(rawPrecio),
+        "Potencia": document.getElementById('specPotencia').value.trim(),
+        "Tracción": document.getElementById('specTraccion').value.trim(),
+        "Kilometraje": formatearKm(rawKm),
+        "Transmisión": document.getElementById('specTransmision').value.trim()
+      };
+
+      const datosCarro = {
+        id: document.getElementById('id').value.trim(),
+        marca: document.getElementById('marca').value.trim(),
+        modelo: document.getElementById('modelo').value.trim(),
+        anio: parseInt(document.getElementById('anio').value),
+        portada: portadaUrl,
+        fotos: fotosGaleriaUrls,
+        specs: specsJson,
+        descripcion: document.getElementById('descripcion').value.trim(),
+        empresa_id: session.user.id
+      };
+
+      if (editandoId) {
+        const { error: updateError } = await supabaseClient
+          .from('carros')
+          .update(datosCarro)
+          .eq('id', editandoId)
+          .eq('empresa_id', session.user.id);
+          
+        if (updateError) throw updateError;
+        alert("¡Unidad actualizada correctamente!");
+      } else {
+        datosCarro.estado = 'DISPONIBLE';
+        const { error: insertError } = await supabaseClient.from('carros').insert([datosCarro]);
+        if (insertError) throw insertError;
+        alert("¡Vehículo publicado correctamente!");
+      }
+
+      cancelarEdicion();
+      cargarInventario();
+    } catch (err) {
+      alert("Error: " + err.message);
+    } finally {
+      btn.innerText = editandoId ? "Actualizar Unidad" : "Guardar y Publicar";
+      btn.disabled = false;
+    }
+  });
+
+  async function cambiarEstado(id, nuevoEstado) {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) return;
+
+    const { error } = await supabaseClient
+      .from('carros')
+      .update({ estado: nuevoEstado })
+      .eq('id', id)
+      .eq('empresa_id', session.user.id);
+
+    if (error) alert("Error al actualizar estado: " + error.message);
+    else cargarInventario();
+  }
+
+  async function eliminarCarro(id) {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) return;
+
+    if (confirm(`¿Seguro que deseas eliminar el carro #${id}?`)) {
       const { error } = await supabaseClient
         .from('carros')
-        .update({ estado: nuevoEstado })
+        .delete()
         .eq('id', id)
         .eq('empresa_id', session.user.id);
 
-      if(error) alert("Error al actualizar estado: " + error.message);
+      if (error) alert("Error al eliminar: " + error.message);
       else cargarInventario();
     }
+  }
 
-    async function eliminarCarro(id) {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (!session) return;
+  async function generarQR(id) {
+    idActualQR = id;
+    const carro = inventarioLocal.find(item => item.id == id);
+    const nombreAuto = carro ? `${carro.marca} ${carro.modelo}` : `Unidad`;
 
-      if(confirm(`¿Seguro que deseas eliminar el carro #${id}?`)) {
-        const { error } = await supabaseClient
-          .from('carros')
-          .delete()
-          .eq('id', id)
-          .eq('empresa_id', session.user.id);
+    document.getElementById('qrTitulo').innerText = `${nombreAuto} (#${id})`;
+    document.getElementById('qrcode').innerHTML = "";
 
-        if(error) alert("Error al eliminar: " + error.message);
-        else cargarInventario();
-      }
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    const loteId = session?.user?.id || "";
+
+    const linkCarro = `${BASE_URL_CATALOGO}?lote=${loteId}#/carro/${id}`;
+
+    new QRCode(document.getElementById("qrcode"), {
+      text: linkCarro,
+      width: 180,
+      height: 180
+    });
+
+    document.getElementById('qrModal').style.display = 'flex';
+  }
+
+  function descargarQR() {
+    const qrContainer = document.getElementById('qrcode');
+    const img = qrContainer.querySelector('img');
+    const canvas = qrContainer.querySelector('canvas');
+
+    let imageSrc = "";
+    if (img && img.src) {
+      imageSrc = img.src;
+    } else if (canvas) {
+      imageSrc = canvas.toDataURL("image/png");
     }
 
-    async function generarQR(id) {
-      idActualQR = id;
-      const carro = inventarioLocal.find(item => item.id == id);
-      const nombreAuto = carro ? `${carro.marca} ${carro.modelo}` : `Unidad`;
-
-      document.getElementById('qrTitulo').innerText = `${nombreAuto} (#${id})`;
-      document.getElementById('qrcode').innerHTML = "";
-
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      const loteId = session?.user?.id || "";
-
-      const linkCarro = `${BASE_URL_CATALOGO}?lote=${loteId}#/carro/${id}`;
-
-      new QRCode(document.getElementById("qrcode"), {
-        text: linkCarro,
-        width: 180,
-        height: 180
-      });
-
-      document.getElementById('qrModal').style.display = 'flex';
+    if (!imageSrc) {
+      alert("El código QR aún se está generando, intenta de nuevo.");
+      return;
     }
 
-    function descargarQR() {
-      const qrContainer = document.getElementById('qrcode');
-      const img = qrContainer.querySelector('img');
-      const canvas = qrContainer.querySelector('canvas');
+    const link = document.createElement('a');
+    link.href = imageSrc;
+    link.download = `QR_Auto_${idActualQR}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 
-      let imageSrc = "";
-      if (img && img.src) {
-        imageSrc = img.src;
-      } else if (canvas) {
-        imageSrc = canvas.toDataURL("image/png");
-      }
-
-      if (!imageSrc) {
-        alert("El código QR aún se está generando, intenta de nuevo.");
-        return;
-      }
-
-      const link = document.createElement('a');
-      link.href = imageSrc;
-      link.download = `QR_Auto_${idActualQR}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-
-    function cerrarQR() {
-      document.getElementById('qrModal').style.display = 'none';
-    }
-  </script>
+  function cerrarQR() {
+    document.getElementById('qrModal').style.display = 'none';
+  }
+</script>
 </body>
 </html>
