@@ -82,11 +82,23 @@
     letter-spacing:1.8px;
   }
 
-  /* Mezcla del logo con el fondo */
-  #logoEmpresa, #imgLote {
-    mix-blend-mode: screen;
-    filter: contrast(110%) brightness(105%);
+  /* LOGO DEL HEADER (INDEPENDIENTE) */
+  .logo-header {
+    height: 42px;
+    width: auto;
     object-fit: contain;
+    mix-blend-mode: screen; /* Elimina fondo negro */
+    filter: contrast(110%) brightness(105%);
+  }
+
+  /* LOGO DEL HERO / LOTE (INDEPENDIENTE) */
+  .logo-hero {
+    width: 100%;
+    height: auto;
+    max-height: 90px;
+    object-fit: contain;
+    mix-blend-mode: screen; /* Elimina fondo negro */
+    filter: contrast(110%) brightness(105%);
   }
 
   main{max-width:1250px;margin:0 auto;padding:42px clamp(18px,4vw,36px) 90px}
@@ -331,14 +343,15 @@
 <body>
 
 <header>
-  <div class="brand-wrap" style="display: flex; align-items: center; gap: 12px;">
-    <img id="logoEmpresa" src="" alt="Logo" style="height: 38px; width: auto; display: none;">
+  <div class="brand-wrap">
+    <img id="logoEmpresa" class="logo-header" src="" alt="Logo Header" style="display: none;">
     <div>
       <div class="brand" id="nombreEmpresa">CATÁLOGO <span>/UNIDADES</span></div>
       <div class="brand-sub">ESCANEA · CONSULTA · COMPARA</div>
     </div>
   </div>
 </header>
+
 <main>
 
   <!-- ==================== VISTA 1: CATÁLOGO ==================== -->
@@ -350,7 +363,7 @@
         <div class="lead" style="font-size: 0.8rem; margin-top: 4px;">Explora el inventario y consulta las especificaciones.</div>
       </div>
       <div id="logoLoteWrap" style="width: 130px; flex-shrink: 0;">
-        <img id="imgLote" src="" alt="Logo Lote" style="width: 100%; height: auto; display: none;">
+        <img id="imgLote" class="logo-hero" src="" alt="Logo Lote" style="display: none;">
       </div>
     </div>
     <div class="catalog-count"><strong id="unit-count">0</strong> UNIDADES EN INVENTARIO</div>
@@ -512,15 +525,19 @@ async function cargarPerfilEmpresa(loteId) {
     elNombre.innerHTML = `${perfil.nombre_empresa} <span>/UNIDADES</span>`;
   }
 
+  // Carga independiente: prioriza logo específico o usa logo_url general
+  const urlHeader = perfil.logo_header_url || perfil.logo_url;
+  const urlHero = perfil.logo_hero_url || perfil.logo_url;
+
   const logoEmpresa = document.getElementById('logoEmpresa');
-  if (logoEmpresa && perfil.logo_url) {
-    logoEmpresa.src = perfil.logo_url;
+  if (logoEmpresa && urlHeader) {
+    logoEmpresa.src = urlHeader;
     logoEmpresa.style.display = 'block';
   }
 
   const imgLote = document.getElementById('imgLote');
-  if (imgLote && perfil.logo_url) {
-    imgLote.src = perfil.logo_url;
+  if (imgLote && urlHero) {
+    imgLote.src = urlHero;
     imgLote.style.display = 'block';
   }
 
