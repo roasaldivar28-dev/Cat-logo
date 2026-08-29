@@ -507,11 +507,24 @@ function enrutar(){
 }
 
 async function cargarCarros(){
-  const { data, error } = await supabaseClient.from('carros').select('*');
+  // 1. Obtener el parámetro "lote" de la URL (ej. index.html?lote=ID_DEL_CLIENTE)
+  const urlParams = new URLSearchParams(window.location.search);
+  const loteId = urlParams.get('lote');
+
+  let query = supabaseClient.from('carros').select('*');
+
+  // 2. Si la URL trae un ID de lote, filtra únicamente sus autos
+  if (loteId) {
+    query = query.eq('empresa_id', loteId);
+  }
+
+  const { data, error } = await query;
+  
   if(error){
     console.error('Error cargando carros:', error);
     return;
   }
+
   CARROS = data;
   window.addEventListener('hashchange', enrutar);
   pintarCatalogo();
