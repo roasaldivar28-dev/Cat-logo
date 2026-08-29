@@ -284,7 +284,7 @@
     font-weight:800;padding:14px 20px;border-radius:11px;
     margin-top:20px;font-size:13px;
     box-shadow:0 8px 24px rgba(32,201,107,.15);
-    transition:.2s;
+    transition:.2s;cursor:pointer;
   }
   .btn-whatsapp:hover{background:#36dc7d;transform:translateY(-2px)}
 
@@ -373,7 +373,7 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let CARROS = [];
-let TELEFONO_WHATSAPP = ""; // Se asigna dinámicamente según el lote
+let TELEFONO_WHATSAPP = "";
 
 const grid = document.getElementById('grid');
 const viewCatalogo = document.getElementById('view-catalogo');
@@ -401,7 +401,6 @@ function pintarCatalogo(){
     return;
   }
 
-  // Se mantiene el kilometraje visible en la tarjeta del catálogo
   grid.innerHTML = filtrados.map(c => `
     <div class="card" onclick="location.hash='#/carro/${c.id}'">
       <div class="card-media">
@@ -417,13 +416,19 @@ function pintarCatalogo(){
   `).join('');
 }
 
+function abrirWhatsApp(marca, modelo, anio) {
+  if (!TELEFONO_WHATSAPP) {
+    alert("El número de WhatsApp de este lote no está configurado.");
+    return;
+  }
+  const mensaje = encodeURIComponent(`¡Hola! Me interesa la unidad ${marca} ${modelo} ${anio}. ¿Sigue disponible?`);
+  const url = `https://api.whatsapp.com/send?phone=${TELEFONO_WHATSAPP}&text=${mensaje}`;
+  window.open(url, '_blank');
+}
+
 function pintarFicha(carro){
   const urlUnidad = `${location.origin}${location.pathname}#/carro/${carro.id}`;
   const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(urlUnidad)}`;
-  
-  // Mensaje predeterminado de WhatsApp SIN kilometraje
-  const mensajeWA = encodeURIComponent(`¡Hola! Me interesa la unidad ${carro.marca} ${carro.modelo} ${carro.anio}. ¿Sigue disponible?`);
-  const urlWhatsApp = TELEFONO_WHATSAPP ? `https://wa.me/${TELEFONO_WHATSAPP}?text=${mensajeWA}` : '#';
 
   const specsHtml = Object.entries(carro.specs || {}).map(([k,v]) => `
     <div class="spec-row"><span>${k}</span><span>${v}</span></div>
@@ -455,7 +460,7 @@ function pintarFicha(carro){
         <h3>Ficha técnica</h3>
         ${specsHtml}
         <div class="desc">${carro.descripcion || ''}</div>
-        <a href="${urlWhatsApp}" target="_blank" class="btn-whatsapp">💬 Preguntar por WhatsApp</a>
+        <button onclick="abrirWhatsApp('${carro.marca}', '${carro.modelo}', '${carro.anio}')" class="btn-whatsapp">💬 Preguntar por WhatsApp</button>
       </div>
     </div>
   `;
@@ -479,7 +484,6 @@ function enrutar(){
   viewFicha.style.display = 'none';
 }
 
-// Cargar información personalizada del lote
 async function cargarPerfilEmpresa(loteId) {
   if (!loteId) return;
 
@@ -491,29 +495,30 @@ async function cargarPerfilEmpresa(loteId) {
 
   if (error || !perfil) return;
 
-  // Actualizar Nombre
   const elNombre = document.getElementById('nombreEmpresa');
   if (elNombre && perfil.nombre_empresa) {
     elNombre.innerHTML = `${perfil.nombre_empresa} <span>/UNIDADES</span>`;
   }
 
-  // Actualizar Logo Superior
   const logoEmpresa = document.getElementById('logoEmpresa');
   if (logoEmpresa && perfil.logo_url) {
     logoEmpresa.src = perfil.logo_url;
     logoEmpresa.style.display = 'block';
   }
 
-  // Actualizar Logo del Héroe
   const imgLote = document.getElementById('imgLote');
   if (imgLote && perfil.logo_url) {
     imgLote.src = perfil.logo_url;
     imgLote.style.display = 'block';
   }
 
-  // Extraer únicamente los dígitos del teléfono del perfil
   if (perfil.whatsapp) {
-    TELEFONO_WHATSAPP = String(perfil.whatsapp).replace(/[^0-9]/g, '');
+    let numClean = String(perfil.whatsapp).replace(/[^0-9]/g, '');
+    // Si el número tiene 10 dígitos (México), antepone la clave internacional 52
+    if (numClean.length === 10) {
+      numClean = '52' + numClean;
+    }
+    TELEFONO_WHATSAPP = numClean;
   }
 }
 
