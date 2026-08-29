@@ -639,6 +639,9 @@
       btn.disabled = true;
 
       try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) throw new Error("No hay sesión activa.");
+
         const portadaInput = document.getElementById('fotoPortada');
         const galeriaInput = document.getElementById('fotosGaleria');
 
@@ -673,8 +676,6 @@
           "Transmisión": document.getElementById('specTransmision').value.trim()
         };
 
-        const { data: { session } } = await supabaseClient.auth.getSession();
-
         const datosCarro = {
           id: document.getElementById('id').value.trim(),
           marca: document.getElementById('marca').value.trim(),
@@ -684,11 +685,16 @@
           fotos: fotosGaleriaUrls,
           specs: specsJson,
           descripcion: document.getElementById('descripcion').value.trim(),
-          empresa_id: session?.user?.id
+          empresa_id: session.user.id
         };
 
         if (editandoId) {
-          const { error: updateError } = await supabaseClient.from('carros').update(datosCarro).eq('id', editandoId);
+          const { error: updateError } = await supabaseClient
+            .from('carros')
+            .update(datosCarro)
+            .eq('id', editandoId)
+            .eq('empresa_id', session.user.id);
+            
           if (updateError) throw updateError;
           alert("¡Unidad actualizada correctamente!");
         } else {
@@ -709,14 +715,30 @@
     });
 
     async function cambiarEstado(id, nuevoEstado) {
-      const { error } = await supabaseClient.from('carros').update({ estado: nuevoEstado }).eq('id', id);
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) return;
+
+      const { error } = await supabaseClient
+        .from('carros')
+        .update({ estado: nuevoEstado })
+        .eq('id', id)
+        .eq('empresa_id', session.user.id);
+
       if(error) alert("Error al actualizar estado: " + error.message);
       else cargarInventario();
     }
 
     async function eliminarCarro(id) {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) return;
+
       if(confirm(`¿Seguro que deseas eliminar el carro #${id}?`)) {
-        const { error } = await supabaseClient.from('carros').delete().eq('id', id);
+        const { error } = await supabaseClient
+          .from('carros')
+          .delete()
+          .eq('id', id)
+          .eq('empresa_id', session.user.id);
+
         if(error) alert("Error al eliminar: " + error.message);
         else cargarInventario();
       }
@@ -733,7 +755,6 @@
       const { data: { session } } = await supabaseClient.auth.getSession();
       const loteId = session?.user?.id || "";
 
-      // Generar la URL incluyendo la consulta del lote y la ruta hash de la unidad
       const linkCarro = `${BASE_URL_CATALOGO}?lote=${loteId}#/carro/${id}`;
 
       new QRCode(document.getElementById("qrcode"), {
