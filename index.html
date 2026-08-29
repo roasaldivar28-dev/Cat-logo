@@ -373,7 +373,7 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let CARROS = [];
-let TELEFONO_WHATSAPP = "525655486039"; // Número por defecto si no está definido en el perfil
+let TELEFONO_WHATSAPP = ""; // Se asigna dinámicamente según el lote
 
 const grid = document.getElementById('grid');
 const viewCatalogo = document.getElementById('view-catalogo');
@@ -388,8 +388,7 @@ function pintarCatalogo(){
 
   const filtrados = CARROS.filter(c => {
     const texto = [
-      c.id, c.marca, c.modelo, c.anio, c.estado,
-      c.specs?.["Kilometraje"] || ''
+      c.id, c.marca, c.modelo, c.anio, c.estado, c.km
     ].join(' ').toLowerCase();
     return texto.includes(term);
   });
@@ -402,6 +401,7 @@ function pintarCatalogo(){
     return;
   }
 
+  // Se mantiene el kilometraje visible en la tarjeta del catálogo
   grid.innerHTML = filtrados.map(c => `
     <div class="card" onclick="location.hash='#/carro/${c.id}'">
       <div class="card-media">
@@ -411,7 +411,7 @@ function pintarCatalogo(){
       <div class="card-body">
         ${c.estado ? `<span class="badge badge-${String(c.estado).toLowerCase()}">${c.estado}</span>` : ''}
         <div class="card-title">${c.marca} ${c.modelo}</div>
-        <div class="card-meta">${c.anio} · ${c.specs?.["Kilometraje"] || ''}</div>
+        <div class="card-meta">${c.anio} · ${c.km || 'N/D'}</div>
       </div>
     </div>
   `).join('');
@@ -420,8 +420,10 @@ function pintarCatalogo(){
 function pintarFicha(carro){
   const urlUnidad = `${location.origin}${location.pathname}#/carro/${carro.id}`;
   const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(urlUnidad)}`;
+  
+  // Mensaje predeterminado de WhatsApp SIN kilometraje
   const mensajeWA = encodeURIComponent(`¡Hola! Me interesa la unidad ${carro.marca} ${carro.modelo} ${carro.anio}. ¿Sigue disponible?`);
-  const urlWhatsApp = `https://wa.me/${TELEFONO_WHATSAPP}?text=${mensajeWA}`;
+  const urlWhatsApp = TELEFONO_WHATSAPP ? `https://wa.me/${TELEFONO_WHATSAPP}?text=${mensajeWA}` : '#';
 
   const specsHtml = Object.entries(carro.specs || {}).map(([k,v]) => `
     <div class="spec-row"><span>${k}</span><span>${v}</span></div>
@@ -477,7 +479,7 @@ function enrutar(){
   viewFicha.style.display = 'none';
 }
 
-// Cargar información personalizada del lote (Nombre, Logo y WhatsApp)
+// Cargar información personalizada del lote
 async function cargarPerfilEmpresa(loteId) {
   if (!loteId) return;
 
@@ -509,9 +511,9 @@ async function cargarPerfilEmpresa(loteId) {
     imgLote.style.display = 'block';
   }
 
-  // Actualizar Teléfono de WhatsApp si existe en perfiles
+  // Extraer únicamente los dígitos del teléfono del perfil
   if (perfil.whatsapp) {
-    TELEFONO_WHATSAPP = perfil.whatsapp.replace(/[^0-9]/g, '');
+    TELEFONO_WHATSAPP = String(perfil.whatsapp).replace(/[^0-9]/g, '');
   }
 }
 
@@ -519,11 +521,14 @@ async function cargarCarros(){
   const urlParams = new URLSearchParams(window.location.search);
   const loteId = urlParams.get('lote');
 
+  if (loteId) {
+    await cargarPerfilEmpresa(loteId);
+  }
+
   let query = supabaseClient.from('carros').select('*');
 
   if (loteId) {
     query = query.eq('empresa_id', loteId);
-    cargarPerfilEmpresa(loteId); // Carga el perfil dinámico del lote
   }
 
   const { data, error } = await query;
