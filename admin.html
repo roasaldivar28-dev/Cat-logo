@@ -63,7 +63,6 @@
       margin-bottom: 6px;
     }
 
-    /* ---------- Cards ---------- */
     .card {
       background: linear-gradient(180deg, var(--surface) 0%, var(--surface-sunken) 100%);
       padding: 26px 24px;
@@ -95,7 +94,6 @@
     }
     .section-label:first-of-type { margin-top: 4px; }
 
-    /* ---------- Forms ---------- */
     .form-group { margin-bottom: 14px; }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
@@ -156,7 +154,6 @@
     }
     input[type="file"]::file-selector-button:hover { background: var(--surface); }
 
-    /* ---------- Buttons ---------- */
     button {
       background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 100%);
       color: #201a0d;
@@ -184,7 +181,6 @@
     }
     .btn-cancel:hover { background: var(--surface-raised); filter: none; color: var(--text); }
 
-    /* ---------- Login ---------- */
     #loginCard { max-width: 380px; margin: 12vh auto 0; text-align: center; }
     .login-mark {
       width: 46px; height: 46px;
@@ -217,7 +213,6 @@
     }
     .btn-logout:hover { border-color: var(--danger); color: var(--danger); filter: none; }
 
-    /* ---------- Inventory ---------- */
     .item-row {
       display: flex; align-items: center; justify-content: space-between;
       background: var(--surface-raised);
@@ -273,7 +268,6 @@
 
     #listaInventario > p { color: var(--text-dim); font-size: 14px; text-align: center; padding: 20px 0; }
 
-    /* ---------- QR Modal ---------- */
     #qrModal {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(10,10,12,0.82); backdrop-filter: blur(3px);
@@ -475,7 +469,6 @@
     let idActualQR = '';
     let inventarioLocal = [];
 
-    // Verificación de sesión al iniciar
     document.addEventListener("DOMContentLoaded", async () => {
       try {
         const { data: { session } } = await supabaseClient.auth.getSession();
@@ -487,7 +480,6 @@
       }
     });
 
-    // Evento Formulario Login
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('btnLogin');
@@ -530,49 +522,47 @@
       document.getElementById('adminPanel').style.display = 'none';
     }
 
-  async function cargarInventario() {
-  const contenedor = document.getElementById('listaInventario');
-  
-  // 1. Obtener la sesión activa
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (!session) return;
+    async function cargarInventario() {
+      const contenedor = document.getElementById('listaInventario');
+      
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) return;
 
-  // 2. Traer únicamente los carros vinculados a este usuario
-  const { data: carros, error } = await supabaseClient
-    .from('carros')
-    .select('*')
-    .eq('empresa_id', session.user.id);
+      const { data: carros, error } = await supabaseClient
+        .from('carros')
+        .select('*')
+        .eq('empresa_id', session.user.id);
 
-  if(error) {
-    contenedor.innerHTML = "<p style='color:#c26a66'>Error al cargar inventario: " + error.message + "</p>";
-    return;
-  }
+      if(error) {
+        contenedor.innerHTML = "<p style='color:#c26a66'>Error al cargar inventario: " + error.message + "</p>";
+        return;
+      }
 
-  inventarioLocal = carros || [];
+      inventarioLocal = carros || [];
 
-  if(!carros || carros.length === 0) {
-    contenedor.innerHTML = "<p>No hay carros registrados aún.</p>";
-    return;
-  }
+      if(!carros || carros.length === 0) {
+        contenedor.innerHTML = "<p>No hay carros registrados aún.</p>";
+        return;
+      }
 
-  contenedor.innerHTML = carros.map(c => `
-    <div class="item-row" data-estado="${c.estado || 'DISPONIBLE'}">
-      <div class="item-info">
-        <div class="item-id">#${c.id}</div>
-        <div class="item-name">${c.marca} ${c.modelo} · ${c.anio}</div>
-        <span class="item-status"><span class="dot"></span>${c.estado || 'DISPONIBLE'}</span>
-      </div>
-      <div class="item-actions">
-        <button class="btn-sm btn-edit" onclick="prepararEdicion('${c.id}')">Editar</button>
-        <button class="btn-sm btn-disp" onclick="cambiarEstado('${c.id}', 'DISPONIBLE')">Dispo</button>
-        <button class="btn-sm btn-apar" onclick="cambiarEstado('${c.id}', 'APARTADO')">Apart</button>
-        <button class="btn-sm btn-vend" onclick="cambiarEstado('${c.id}', 'VENDIDO')">Vend</button>
-        <button class="btn-sm btn-qr" onclick="generarQR('${c.id}')">QR</button>
-        <button class="btn-sm btn-del" onclick="eliminarCarro('${c.id}')">Eliminar</button>
-      </div>
-    </div>
-  `).join('');
-}
+      contenedor.innerHTML = carros.map(c => `
+        <div class="item-row" data-estado="${c.estado || 'DISPONIBLE'}">
+          <div class="item-info">
+            <div class="item-id">#${c.id}</div>
+            <div class="item-name">${c.marca} ${c.modelo} · ${c.anio}</div>
+            <span class="item-status"><span class="dot"></span>${c.estado || 'DISPONIBLE'}</span>
+          </div>
+          <div class="item-actions">
+            <button class="btn-sm btn-edit" onclick="prepararEdicion('${c.id}')">Editar</button>
+            <button class="btn-sm btn-disp" onclick="cambiarEstado('${c.id}', 'DISPONIBLE')">Dispo</button>
+            <button class="btn-sm btn-apar" onclick="cambiarEstado('${c.id}', 'APARTADO')">Apart</button>
+            <button class="btn-sm btn-vend" onclick="cambiarEstado('${c.id}', 'VENDIDO')">Vend</button>
+            <button class="btn-sm btn-qr" onclick="generarQR('${c.id}')">QR</button>
+            <button class="btn-sm btn-del" onclick="eliminarCarro('${c.id}')">Eliminar</button>
+          </div>
+        </div>
+      `).join('');
+    }
 
     async function subirImagen(file) {
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}_${file.name.replace(/\s+/g, '_')}`;
@@ -583,7 +573,6 @@
       return publicUrlData.publicUrl;
     }
 
-    // Funciones de formato exacto para Specs
     function formatearPrecio(val) {
       const num = parseInt(val) || 0;
       return '$' + num.toLocaleString('en-US') + ' MXN';
@@ -609,7 +598,6 @@
       
       const specs = carro.specs || {};
 
-      // Extraer solo dígitos de las cadenas para rellenar los inputs numéricos
       const rawPrecio = specs["Precio"] ? specs["Precio"].replace(/[^0-9]/g, '') : '';
       const rawKm = specs["Kilometraje"] ? specs["Kilometraje"].replace(/[^0-9]/g, '') : '';
 
@@ -644,7 +632,6 @@
       document.getElementById('lblGaleria').innerText = "Galería de Fotos (puedes seleccionar varias):";
     }
 
-    // Evento guardar o actualizar carro
     document.getElementById('carForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('btnGuardar');
@@ -676,7 +663,6 @@
         const rawPrecio = document.getElementById('specPrecio').value;
         const rawKm = document.getElementById('specKm').value;
 
-        // Formato exacto del JSON de specs
         const specsJson = {
           "Color": document.getElementById('specColor').value.trim(),
           "Motor": document.getElementById('specMotor').value.trim(),
@@ -689,17 +675,17 @@
 
         const { data: { session } } = await supabaseClient.auth.getSession();
 
-const datosCarro = {
-  id: document.getElementById('id').value.trim(),
-  marca: document.getElementById('marca').value.trim(),
-  modelo: document.getElementById('modelo').value.trim(),
-  anio: parseInt(document.getElementById('anio').value),
-  portada: portadaUrl,
-  fotos: fotosGaleriaUrls,
-  specs: specsJson,
-  descripcion: document.getElementById('descripcion').value.trim(),
-  empresa_id: session?.user?.id
-};
+        const datosCarro = {
+          id: document.getElementById('id').value.trim(),
+          marca: document.getElementById('marca').value.trim(),
+          modelo: document.getElementById('modelo').value.trim(),
+          anio: parseInt(document.getElementById('anio').value),
+          portada: portadaUrl,
+          fotos: fotosGaleriaUrls,
+          specs: specsJson,
+          descripcion: document.getElementById('descripcion').value.trim(),
+          empresa_id: session?.user?.id
+        };
 
         if (editandoId) {
           const { error: updateError } = await supabaseClient.from('carros').update(datosCarro).eq('id', editandoId);
@@ -736,16 +722,20 @@ const datosCarro = {
       }
     }
 
-    function generarQR(id) {
+    async function generarQR(id) {
       idActualQR = id;
       const carro = inventarioLocal.find(item => item.id == id);
       const nombreAuto = carro ? `${carro.marca} ${carro.modelo}` : `Unidad`;
 
       document.getElementById('qrTitulo').innerText = `${nombreAuto} (#${id})`;
       document.getElementById('qrcode').innerHTML = "";
-      
-      const linkCarro = `${BASE_URL_CATALOGO}#carro-${id}`;
-      
+
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      const loteId = session?.user?.id || "";
+
+      // Generar la URL incluyendo la consulta del lote y la ruta hash de la unidad
+      const linkCarro = `${BASE_URL_CATALOGO}?lote=${loteId}#/carro/${id}`;
+
       new QRCode(document.getElementById("qrcode"), {
         text: linkCarro,
         width: 180,
