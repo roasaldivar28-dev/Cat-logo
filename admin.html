@@ -530,40 +530,49 @@
       document.getElementById('adminPanel').style.display = 'none';
     }
 
-    async function cargarInventario() {
-      const contenedor = document.getElementById('listaInventario');
-      const { data: carros, error } = await supabaseClient.from('carros').select('*');
-      
-      if(error) {
-        contenedor.innerHTML = "<p style='color:#c26a66'>Error al cargar inventario: " + error.message + "</p>";
-        return;
-      }
+  async function cargarInventario() {
+  const contenedor = document.getElementById('listaInventario');
+  
+  // 1. Obtener la sesión activa
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) return;
 
-      inventarioLocal = carros || [];
+  // 2. Traer únicamente los carros vinculados a este usuario
+  const { data: carros, error } = await supabaseClient
+    .from('carros')
+    .select('*')
+    .eq('empresa_id', session.user.id);
 
-      if(!carros || carros.length === 0) {
-        contenedor.innerHTML = "<p>No hay carros registrados aún.</p>";
-        return;
-      }
+  if(error) {
+    contenedor.innerHTML = "<p style='color:#c26a66'>Error al cargar inventario: " + error.message + "</p>";
+    return;
+  }
 
-      contenedor.innerHTML = carros.map(c => `
-        <div class="item-row" data-estado="${c.estado || 'DISPONIBLE'}">
-          <div class="item-info">
-            <div class="item-id">#${c.id}</div>
-            <div class="item-name">${c.marca} ${c.modelo} · ${c.anio}</div>
-            <span class="item-status"><span class="dot"></span>${c.estado || 'DISPONIBLE'}</span>
-          </div>
-          <div class="item-actions">
-            <button class="btn-sm btn-edit" onclick="prepararEdicion('${c.id}')">Editar</button>
-            <button class="btn-sm btn-disp" onclick="cambiarEstado('${c.id}', 'DISPONIBLE')">Dispo</button>
-            <button class="btn-sm btn-apar" onclick="cambiarEstado('${c.id}', 'APARTADO')">Apart</button>
-            <button class="btn-sm btn-vend" onclick="cambiarEstado('${c.id}', 'VENDIDO')">Vend</button>
-            <button class="btn-sm btn-qr" onclick="generarQR('${c.id}')">QR</button>
-            <button class="btn-sm btn-del" onclick="eliminarCarro('${c.id}')">Eliminar</button>
-          </div>
-        </div>
-      `).join('');
-    }
+  inventarioLocal = carros || [];
+
+  if(!carros || carros.length === 0) {
+    contenedor.innerHTML = "<p>No hay carros registrados aún.</p>";
+    return;
+  }
+
+  contenedor.innerHTML = carros.map(c => `
+    <div class="item-row" data-estado="${c.estado || 'DISPONIBLE'}">
+      <div class="item-info">
+        <div class="item-id">#${c.id}</div>
+        <div class="item-name">${c.marca} ${c.modelo} · ${c.anio}</div>
+        <span class="item-status"><span class="dot"></span>${c.estado || 'DISPONIBLE'}</span>
+      </div>
+      <div class="item-actions">
+        <button class="btn-sm btn-edit" onclick="prepararEdicion('${c.id}')">Editar</button>
+        <button class="btn-sm btn-disp" onclick="cambiarEstado('${c.id}', 'DISPONIBLE')">Dispo</button>
+        <button class="btn-sm btn-apar" onclick="cambiarEstado('${c.id}', 'APARTADO')">Apart</button>
+        <button class="btn-sm btn-vend" onclick="cambiarEstado('${c.id}', 'VENDIDO')">Vend</button>
+        <button class="btn-sm btn-qr" onclick="generarQR('${c.id}')">QR</button>
+        <button class="btn-sm btn-del" onclick="eliminarCarro('${c.id}')">Eliminar</button>
+      </div>
+    </div>
+  `).join('');
+}
 
     async function subirImagen(file) {
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}_${file.name.replace(/\s+/g, '_')}`;
