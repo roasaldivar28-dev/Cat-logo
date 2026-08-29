@@ -82,6 +82,13 @@
     letter-spacing:1.8px;
   }
 
+  /* Mezcla del logo con el fondo */
+  #logoEmpresa, #imgLote {
+    mix-blend-mode: screen;
+    filter: contrast(110%) brightness(105%);
+    object-fit: contain;
+  }
+
   main{max-width:1250px;margin:0 auto;padding:42px clamp(18px,4vw,36px) 90px}
 
   .catalog-hero{
@@ -325,7 +332,7 @@
 
 <header>
   <div class="brand-wrap" style="display: flex; align-items: center; gap: 12px;">
-    <img id="logoEmpresa" src="" alt="Logo" style="height: 38px; width: auto; object-fit: contain; border-radius: 6px; display: none;">
+    <img id="logoEmpresa" src="" alt="Logo" style="height: 38px; width: auto; display: none;">
     <div>
       <div class="brand" id="nombreEmpresa">CATÁLOGO <span>/UNIDADES</span></div>
       <div class="brand-sub">ESCANEA · CONSULTA · COMPARA</div>
@@ -343,7 +350,7 @@
         <div class="lead" style="font-size: 0.8rem; margin-top: 4px;">Explora el inventario y consulta las especificaciones.</div>
       </div>
       <div id="logoLoteWrap" style="width: 130px; flex-shrink: 0;">
-        <img id="imgLote" src="" alt="Logo Lote" style="width: 100%; height: auto; display: none; object-fit: contain;">
+        <img id="imgLote" src="" alt="Logo Lote" style="width: 100%; height: auto; display: none;">
       </div>
     </div>
     <div class="catalog-count"><strong id="unit-count">0</strong> UNIDADES EN INVENTARIO</div>
