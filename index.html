@@ -68,15 +68,6 @@
   }
 
   .brand-wrap{display:flex;align-items:center;gap:14px}
-  .brand-mark{
-    width:42px;height:42px;border-radius:12px;
-    display:grid;place-items:center;
-    border:1px solid rgba(215,181,109,.35);
-    background:linear-gradient(145deg,rgba(215,181,109,.2),rgba(215,181,109,.03));
-    color:var(--accent-2);
-    font-family:'Barlow Condensed',sans-serif;
-    font-weight:700;font-size:20px;
-  }
 
   .brand{
     font-family:'Barlow Condensed',sans-serif;
@@ -334,7 +325,7 @@
 
 <header>
   <div class="brand-wrap" style="display: flex; align-items: center; gap: 12px;">
-    <img id="logoEmpresa" src="bmw.jpg" alt="Logo" style="height: 38px; width: auto; object-fit: contain; mix-blend-mode: screen; filter: invert(1) hue-rotate(180deg); display: block;">
+    <img id="logoEmpresa" src="" alt="Logo" style="height: 38px; width: auto; object-fit: contain; border-radius: 6px; display: none;">
     <div>
       <div class="brand" id="nombreEmpresa">CATÁLOGO <span>/UNIDADES</span></div>
       <div class="brand-sub">ESCANEA · CONSULTA · COMPARA</div>
@@ -345,14 +336,14 @@
 
   <!-- ==================== VISTA 1: CATÁLOGO ==================== -->
   <section id="view-catalogo">
-  <div class="catalog-hero" style="display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; gap: 10px !important;">
+    <div class="catalog-hero" style="display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; gap: 10px !important;">
       <div style="flex: 1; min-width: 0;">
         <div class="eyebrow">Inventario seleccionado</div>
         <h1 class="hero-title" style="font-size: 1.4rem; line-height: 1.2;">Encuentra tu <em>próxima</em> unidad.</h1>
         <div class="lead" style="font-size: 0.8rem; margin-top: 4px;">Explora el inventario y consulta las especificaciones.</div>
       </div>
       <div id="logoLoteWrap" style="width: 130px; flex-shrink: 0;">
-        <img id="imgLote" src="logo.jpg" alt="Monroy" style="width: 100%; height: auto; display: block; object-fit: contain; mix-blend-mode: screen;">
+        <img id="imgLote" src="" alt="Logo Lote" style="width: 100%; height: auto; display: none; object-fit: contain;">
       </div>
     </div>
     <div class="catalog-count"><strong id="unit-count">0</strong> UNIDADES EN INVENTARIO</div>
@@ -370,9 +361,9 @@
   </section>
   
   <div class="lightbox" id="lightbox" onclick="cerrarLightbox()">
-  <button class="lightbox-cerrar" onclick="cerrarLightbox()">&times;</button>
-  <img id="lightbox-img" src="">
-</div>
+    <button class="lightbox-cerrar" onclick="cerrarLightbox()">&times;</button>
+    <img id="lightbox-img" src="">
+  </div>
 
 </main>
 
@@ -382,6 +373,7 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let CARROS = [];
+let TELEFONO_WHATSAPP = "525655486039"; // Número por defecto si no está definido en el perfil
 
 const grid = document.getElementById('grid');
 const viewCatalogo = document.getElementById('view-catalogo');
@@ -428,11 +420,10 @@ function pintarCatalogo(){
 function pintarFicha(carro){
   const urlUnidad = `${location.origin}${location.pathname}#/carro/${carro.id}`;
   const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(urlUnidad)}`;
-  const telefonoLote = "525655486039"; 
   const mensajeWA = encodeURIComponent(`¡Hola! Me interesa la unidad ${carro.marca} ${carro.modelo} ${carro.anio}. ¿Sigue disponible?`);
-  const urlWhatsApp = `https://wa.me/${telefonoLote}?text=${mensajeWA}`;
+  const urlWhatsApp = `https://wa.me/${TELEFONO_WHATSAPP}?text=${mensajeWA}`;
 
-  const specsHtml = Object.entries(carro.specs).map(([k,v]) => `
+  const specsHtml = Object.entries(carro.specs || {}).map(([k,v]) => `
     <div class="spec-row"><span>${k}</span><span>${v}</span></div>
   `).join('');
 
@@ -455,13 +446,13 @@ function pintarFicha(carro){
       <div class="visor">
         ${visorHtml}
         <div class="fotos">
-         ${carro.fotos.map(f => `<img src="${f}" onclick="abrirLightbox(this.src)">`).join('')}
+         ${(carro.fotos || []).map(f => `<img src="${f}" onclick="abrirLightbox(this.src)">`).join('')}
         </div>
       </div>
       <div class="specs">
         <h3>Ficha técnica</h3>
         ${specsHtml}
-        <div class="desc">${carro.descripcion}</div>
+        <div class="desc">${carro.descripcion || ''}</div>
         <a href="${urlWhatsApp}" target="_blank" class="btn-whatsapp">💬 Preguntar por WhatsApp</a>
       </div>
     </div>
@@ -486,7 +477,7 @@ function enrutar(){
   viewFicha.style.display = 'none';
 }
 
-// Cargar información personalizada del lote (Nombre y Logo)
+// Cargar información personalizada del lote (Nombre, Logo y WhatsApp)
 async function cargarPerfilEmpresa(loteId) {
   if (!loteId) return;
 
@@ -498,14 +489,29 @@ async function cargarPerfilEmpresa(loteId) {
 
   if (error || !perfil) return;
 
+  // Actualizar Nombre
   const elNombre = document.getElementById('nombreEmpresa');
   if (elNombre && perfil.nombre_empresa) {
     elNombre.innerHTML = `${perfil.nombre_empresa} <span>/UNIDADES</span>`;
   }
 
+  // Actualizar Logo Superior
+  const logoEmpresa = document.getElementById('logoEmpresa');
+  if (logoEmpresa && perfil.logo_url) {
+    logoEmpresa.src = perfil.logo_url;
+    logoEmpresa.style.display = 'block';
+  }
+
+  // Actualizar Logo del Héroe
   const imgLote = document.getElementById('imgLote');
   if (imgLote && perfil.logo_url) {
     imgLote.src = perfil.logo_url;
+    imgLote.style.display = 'block';
+  }
+
+  // Actualizar Teléfono de WhatsApp si existe en perfiles
+  if (perfil.whatsapp) {
+    TELEFONO_WHATSAPP = perfil.whatsapp.replace(/[^0-9]/g, '');
   }
 }
 
@@ -527,7 +533,7 @@ async function cargarCarros(){
     return;
   }
 
-  CARROS = data;
+  CARROS = data || [];
   window.addEventListener('hashchange', enrutar);
   pintarCatalogo();
   enrutar();
