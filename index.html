@@ -334,9 +334,9 @@
 
 <header>
   <div class="brand-wrap" style="display: flex; align-items: center; gap: 12px;">
-    <img src="bmw.jpg" alt="BMW M Logo" style="height: 38px; width: auto; object-fit: contain; mix-blend-mode: screen; filter: invert(1) hue-rotate(180deg); display: block;">
+    <img id="logoEmpresa" src="bmw.jpg" alt="Logo" style="height: 38px; width: auto; object-fit: contain; mix-blend-mode: screen; filter: invert(1) hue-rotate(180deg); display: block;">
     <div>
-      <div class="brand">CATÁLOGO <span>/UNIDADES</span></div>
+      <div class="brand" id="nombreEmpresa">CATÁLOGO <span>/UNIDADES</span></div>
       <div class="brand-sub">ESCANEA · CONSULTA · COMPARA</div>
     </div>
   </div>
@@ -351,8 +351,8 @@
         <h1 class="hero-title" style="font-size: 1.4rem; line-height: 1.2;">Encuentra tu <em>próxima</em> unidad.</h1>
         <div class="lead" style="font-size: 0.8rem; margin-top: 4px;">Explora el inventario y consulta las especificaciones.</div>
       </div>
-      <div style="width: 130px; flex-shrink: 0;">
-        <img src="logo.jpg" alt="Monroy" style="width: 100%; height: auto; display: block; object-fit: contain; mix-blend-mode: screen;">
+      <div id="logoLoteWrap" style="width: 130px; flex-shrink: 0;">
+        <img id="imgLote" src="logo.jpg" alt="Monroy" style="width: 100%; height: auto; display: block; object-fit: contain; mix-blend-mode: screen;">
       </div>
     </div>
     <div class="catalog-count"><strong id="unit-count">0</strong> UNIDADES EN INVENTARIO</div>
@@ -377,32 +377,12 @@
 </main>
 
 <script>
-/* =====================================================================
-   1) TUS DATOS — edita este arreglo para agregar/quitar vehículos.
-      "id" debe ser único y sin espacios (se usa en la URL y en el QR).
-   ===================================================================== */
 const SUPABASE_URL = "https://xkhoorjntavmzhuikauj.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhraG9vcmpudGF2bXpodWlrYXVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3ODY2OTMsImV4cCI6MjEwMzM2MjY5M30.PHBKRKmvDtFMSE0Csy01Qo82s9e8DKXWBicf7JrSHz4";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let CARROS = [];
 
-async function cargarCarrosDesdeBD() {
-  const { data, error } = await supabaseClient.from('carros').select('*');
-  
-  if (error) {
-    console.error('Error al traer los datos de Supabase:', error);
-    return;
-  }
-
-  CARROS = data;
-  pintarCatalogo();
-}
-
-// Carga principal realizada al final del script.
-/* =====================================================================
-   2) NO NECESITAS TOCAR NADA DE AQUÍ PARA ABAJO
-   ===================================================================== */
 const grid = document.getElementById('grid');
 const viewCatalogo = document.getElementById('view-catalogo');
 const viewFicha = document.getElementById('view-ficha');
@@ -506,16 +486,38 @@ function enrutar(){
   viewFicha.style.display = 'none';
 }
 
+// Cargar información personalizada del lote (Nombre y Logo)
+async function cargarPerfilEmpresa(loteId) {
+  if (!loteId) return;
+
+  const { data: perfil, error } = await supabaseClient
+    .from('perfiles')
+    .select('*')
+    .eq('id', loteId)
+    .single();
+
+  if (error || !perfil) return;
+
+  const elNombre = document.getElementById('nombreEmpresa');
+  if (elNombre && perfil.nombre_empresa) {
+    elNombre.innerHTML = `${perfil.nombre_empresa} <span>/UNIDADES</span>`;
+  }
+
+  const imgLote = document.getElementById('imgLote');
+  if (imgLote && perfil.logo_url) {
+    imgLote.src = perfil.logo_url;
+  }
+}
+
 async function cargarCarros(){
-  // 1. Obtener el parámetro "lote" de la URL (ej. index.html?lote=ID_DEL_CLIENTE)
   const urlParams = new URLSearchParams(window.location.search);
   const loteId = urlParams.get('lote');
 
   let query = supabaseClient.from('carros').select('*');
 
-  // 2. Si la URL trae un ID de lote, filtra únicamente sus autos
   if (loteId) {
     query = query.eq('empresa_id', loteId);
+    cargarPerfilEmpresa(loteId); // Carga el perfil dinámico del lote
   }
 
   const { data, error } = await query;
@@ -530,8 +532,10 @@ async function cargarCarros(){
   pintarCatalogo();
   enrutar();
 }
+
 cargarCarros();
-  function abrirLightbox(src){
+
+function abrirLightbox(src){
   document.getElementById('lightbox-img').src = src;
   document.getElementById('lightbox').classList.add('activo');
 }
