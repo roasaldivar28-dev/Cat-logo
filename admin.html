@@ -154,6 +154,12 @@
     }
     input[type="file"]::file-selector-button:hover { background: var(--surface); }
 
+    input[type="color"] {
+      height: 45px;
+      padding: 4px 6px;
+      cursor: pointer;
+    }
+
     button {
       background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 100%);
       color: #201a0d;
@@ -339,6 +345,54 @@
         <h1>Panel de Administrador</h1>
       </div>
       <button onclick="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
+    </div>
+
+    <!-- TARJETA DE PERSONALIZACIÓN DE APARIENCIA DEL CATÁLOGO -->
+    <div class="card">
+      <span class="eyebrow">Apariencia</span>
+      <h2>Personalizar Diseño del Catálogo</h2>
+
+      <form id="themeForm" style="margin-top: 18px;">
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Fondo de Página</label>
+            <input type="color" id="inputColorFondo" value="#0d0f12">
+          </div>
+          <div class="form-group">
+            <label>Fondo de Tarjetas</label>
+            <input type="color" id="inputColorCard" value="#16191e">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Texto Principal</label>
+            <input type="color" id="inputColorTexto" value="#ffffff">
+          </div>
+          <div class="form-group">
+            <label>Color de Acento (Botones/Detalles)</label>
+            <input type="color" id="inputColorAcento" value="#d4af37">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Texto Secundario / Etiquetas</label>
+            <input type="color" id="inputColorSecundario" value="#9ba3af">
+          </div>
+          <div class="form-group">
+            <label>Tipografía Principal</label>
+            <select id="selectFuente">
+              <option value="Inter, sans-serif">Inter (Moderna)</option>
+              <option value="'Fraunces', serif">Fraunces (Elegante / Clásica)</option>
+              <option value="'JetBrains Mono', monospace">JetBrains Mono (Técnica)</option>
+              <option value="system-ui, sans-serif">Sistema (Predeterminada)</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" id="btnGuardarTema">Guardar Cambios de Apariencia</button>
+      </form>
     </div>
 
     <div class="card">
@@ -531,6 +585,7 @@
     document.getElementById('loginCard').style.display = 'none';
     document.getElementById('adminPanel').style.display = 'block';
     cargarInventario();
+    cargarTemaAdmin();
   }
 
   function mostrarLogin() {
@@ -539,6 +594,68 @@
     document.getElementById('listaInventario').innerHTML = '';
     document.getElementById('loginForm').reset();
   }
+
+  // Cargar configuración guardada de colores desde Supabase
+  async function cargarTemaAdmin() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) return;
+
+    const { data: perfil, error } = await supabaseClient
+      .from('perfiles')
+      .select('color_fondo, color_card, color_texto_principal, color_acento, color_secundario, fuente_familia')
+      .eq('id', session.user.id)
+      .single();
+
+    if (error) {
+      console.warn("No se pudo cargar la configuración de tema:", error.message);
+      return;
+    }
+
+    if (perfil) {
+      if (perfil.color_fondo) document.getElementById('inputColorFondo').value = perfil.color_fondo;
+      if (perfil.color_card) document.getElementById('inputColorCard').value = perfil.color_card;
+      if (perfil.color_texto_principal) document.getElementById('inputColorTexto').value = perfil.color_texto_principal;
+      if (perfil.color_acento) document.getElementById('inputColorAcento').value = perfil.color_acento;
+      if (perfil.color_secundario) document.getElementById('inputColorSecundario').value = perfil.color_secundario;
+      if (perfil.fuente_familia) document.getElementById('selectFuente').value = perfil.fuente_familia;
+    }
+  }
+
+  // Guardar configuración de apariencia en Supabase
+  document.getElementById('themeForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnGuardarTema');
+    btn.innerText = "Guardando tema...";
+    btn.disabled = true;
+
+    try {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) throw new Error("No hay sesión activa.");
+
+      const datosTema = {
+        id: session.user.id,
+        color_fondo: document.getElementById('inputColorFondo').value,
+        color_card: document.getElementById('inputColorCard').value,
+        color_texto_principal: document.getElementById('inputColorTexto').value,
+        color_acento: document.getElementById('inputColorAcento').value,
+        color_secundario: document.getElementById('inputColorSecundario').value,
+        fuente_familia: document.getElementById('selectFuente').value
+      };
+
+      const { error } = await supabaseClient
+        .from('perfiles')
+        .upsert(datosTema);
+
+      if (error) throw error;
+
+      alert("¡Apariencia guardada correctamente!");
+    } catch (err) {
+      alert("Error al guardar la apariencia: " + err.message);
+    } finally {
+      btn.innerText = "Guardar Cambios de Apariencia";
+      btn.disabled = false;
+    }
+  });
 
   async function cargarInventario() {
     const contenedor = document.getElementById('listaInventario');
