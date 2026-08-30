@@ -554,8 +554,12 @@ async function cargarCarros(){
   const urlParams = new URLSearchParams(window.location.search);
   const loteId = urlParams.get('lote');
 
-  const perfilPromise = loteId ? cargarPerfilEmpresa(loteId) : Promise.resolve();
+  // 1. Cargar el perfil de la empresa primero si viene la URL con loteId
+  if (loteId) {
+    await cargarPerfilEmpresa(loteId);
+  }
 
+  // 2. Traer el catálogo de vehículos desde Supabase
   let query = supabaseClient.from('carros').select('*');
   if (loteId) {
     query = query.eq('empresa_id', loteId);
@@ -570,8 +574,7 @@ async function cargarCarros(){
 
   CARROS = data || [];
   
-  await perfilPromise;
-
+  // 3. Activar el listener de hash y renderizar la vista
   window.addEventListener('hashchange', enrutar);
   pintarCatalogo();
   enrutar();
