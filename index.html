@@ -82,7 +82,6 @@
     letter-spacing:1.8px;
   }
 
-  /* LOGO DEL HEADER */
   .logo-header {
     height: 42px;
     width: auto;
@@ -90,7 +89,6 @@
     mix-blend-mode: screen;
   }
 
-  /* LOGO DEL HERO / LOTE */
   .logo-hero {
     width: 100%;
     height: auto;
@@ -205,7 +203,7 @@
     margin-bottom:8px;
   }
 
-  /* NUEVO: ALINEACIÓN DE KM Y PRECIO */
+  /* ESTRUCTURA PARA ALINEAR META Y PRECIO */
   .card-footer-info {
     display: flex;
     justify-content: space-between;
@@ -422,18 +420,24 @@ const fichaContenido = document.getElementById('ficha-contenido');
 const searchInput = document.getElementById('search');
 if(searchInput) searchInput.addEventListener('input', pintarCatalogo);
 
-// Funciones Auxiliares para Formatos
+// Formateadores
 function formatearKM(val) {
-  if (!val && val !== 0) return 'N/D';
-  const num = parseInt(val, 10);
+  if (val === undefined || val === null || val === '') return 'N/D';
+  // Si ya contiene letras como "km", lo devolvemos directo
+  if (typeof val === 'string' && val.toLowerCase().includes('km')) return val;
+  
+  const num = parseInt(String(val).replace(/[^0-9]/g, ''), 10);
   if (isNaN(num)) return val;
   return `${num.toLocaleString('es-MX')} km`;
 }
 
 function formatearPrecio(val) {
-  if (!val && val !== 0) return '';
-  const num = parseFloat(val);
-  if (isNaN(num)) return '';
+  if (!val) return '';
+  // Si ya trae signo de peso o texto formateado
+  if (typeof val === 'string' && val.includes('$')) return val;
+  
+  const num = parseFloat(String(val).replace(/[^0-9.]/g, ''));
+  if (isNaN(num)) return val;
   return `$${num.toLocaleString('es-MX')}`;
 }
 
@@ -441,8 +445,9 @@ function pintarCatalogo(){
   const term = (document.getElementById('search')?.value || '').trim().toLowerCase();
 
   const filtrados = CARROS.filter(c => {
-    const kmTexto = c.km || c.kilometraje || '';
-    const precioTexto = c.precio || '';
+    const specs = c.specs || {};
+    const kmTexto = specs.Kilometraje || specs.kilometraje || specs.KM || c.km || '';
+    const precioTexto = specs.Precio || specs.precio || c.precio || '';
     const texto = [
       c.id, c.marca, c.modelo, c.anio, c.estado, kmTexto, precioTexto
     ].join(' ').toLowerCase();
@@ -458,12 +463,15 @@ function pintarCatalogo(){
   }
 
   grid.innerHTML = filtrados.map(c => {
-    // Detecta la propiedad del km (km o kilometraje)
-    const kmValor = c.km !== undefined ? c.km : c.kilometraje;
-    const kmTexto = formatearKM(kmValor);
+    const specs = c.specs || {};
     
-    // Detecta la propiedad del precio
-    const precioTexto = formatearPrecio(c.precio);
+    // Extraer kilometraje desde specs o directo
+    const rawKm = specs.Kilometraje || specs.kilometraje || specs.KM || c.km || c.kilometraje;
+    const kmTexto = formatearKM(rawKm);
+    
+    // Extraer precio desde specs o directo
+    const rawPrecio = specs.Precio || specs.precio || c.precio;
+    const precioTexto = formatearPrecio(rawPrecio);
 
     return `
       <div class="card" onclick="location.hash='#/carro/${c.id}'">
