@@ -85,8 +85,20 @@
   .logo-header {
     height: 42px;
     width: auto;
+    max-width: 180px;
     object-fit: contain;
-    mix-blend-mode: screen;
+    display: block;
+  }
+
+  .brand-text-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .brand-text-wrapper .brand {
+    font-size: 24px;
+    line-height: 1.1;
   }
 
   .logo-hero {
@@ -360,7 +372,7 @@
 <body>
 
 <header>
-  <div class="brand-wrap">
+  <div class="brand-wrap" id="header-brand-container">
     <img id="logoEmpresa" class="logo-header" src="" alt="Logo Header" style="display: none;">
     <div>
       <div class="brand" id="nombreEmpresa">CATÁLOGO <span>/UNIDADES</span></div>
@@ -393,12 +405,12 @@
 
   <!-- ==================== VISTA 2: FICHA DE UN CARRO ==================== -->
   <section id="view-ficha">
-    <button class="back-btn" onclick="irACatalogo()">&larr; volver al catálogo</button>
+    <button class="back-btn" onclick="irACatalogo()">← volver al catálogo</button>
     <div class="ficha" id="ficha-contenido"></div>
   </section>
   
   <div class="lightbox" id="lightbox" onclick="cerrarLightbox()">
-    <button class="lightbox-cerrar" onclick="cerrarLightbox()">&times;</button>
+    <button class="lightbox-cerrar" onclick="cerrarLightbox()">×</button>
     <img id="lightbox-img" src="">
   </div>
 
@@ -577,20 +589,24 @@ async function cargarPerfilEmpresa(loteId) {
     return;
   }
 
-  const elNombre = document.getElementById('nombreEmpresa');
-  if (elNombre && perfil.nombre_empresa) {
-    elNombre.innerHTML = `${perfil.nombre_empresa} <span>/UNIDADES</span>`;
-  }
-
+  const brandContainer = document.getElementById('header-brand-container');
   const urlHeader = perfil.logo_header_url || perfil.logo_url;
-  const urlHero = perfil.logo_hero_url || perfil.logo_url;
 
-  const logoEmpresa = document.getElementById('logoEmpresa');
-  if (logoEmpresa && urlHeader) {
-    logoEmpresa.src = urlHeader;
-    logoEmpresa.style.display = 'block';
+  if (urlHeader && urlHeader.trim() !== '') {
+    brandContainer.innerHTML = `
+      <img class="logo-header" src="${urlHeader}" alt="${perfil.nombre_empresa || 'Logo'}">
+    `;
+  } else {
+    const nombreLote = peerfil.nombre_empresa ? perfil.nombre_empresa.toUpperCase() : 'CATÁLOGO';
+    brandContainer.innerHTML = `
+      <div class="brand-text-wrapper">
+        <div class="brand">${nombreLote} <span>/UNIDADES</span></div>
+        <div class="brand-sub">ESCANEA · CONSULTA · COMPARA</div>
+      </div>
+    `;
   }
 
+  const urlHero = perfil.logo_hero_url || perfil.logo_url;
   const imgLote = document.getElementById('imgLote');
   if (imgLote && urlHero) {
     imgLote.src = urlHero;
