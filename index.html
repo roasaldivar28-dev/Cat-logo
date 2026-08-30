@@ -590,14 +590,15 @@ async function cargarPerfilEmpresa(loteId) {
   }
 
   const brandContainer = document.getElementById('header-brand-container');
-  const urlHeader = perfil.logo_header_url || perfil.logo_url;
+  const nombreLote = perfil.nombre_empresa ? perfil.nombre_empresa.toUpperCase() : 'CATÁLOGO';
 
-  if (urlHeader && urlHeader.trim() !== '') {
+  // Mostrar logo en el header solo si existe URL en logo_header_url
+  if (perfil.logo_header_url && perfil.logo_header_url.trim() !== '') {
     brandContainer.innerHTML = `
-      <img class="logo-header" src="${urlHeader}" alt="${perfil.nombre_empresa || 'Logo'}">
+      <img class="logo-header" src="${perfil.logo_header_url}" alt="${nombreLote}">
     `;
   } else {
-    const nombreLote = peerfil.nombre_empresa ? perfil.nombre_empresa.toUpperCase() : 'CATÁLOGO';
+    // Si no hay logo_header_url, mostrar el texto de nombre_empresa
     brandContainer.innerHTML = `
       <div class="brand-text-wrapper">
         <div class="brand">${nombreLote} <span>/UNIDADES</span></div>
@@ -606,15 +607,19 @@ async function cargarPerfilEmpresa(loteId) {
     `;
   }
 
-  const urlHero = perfil.logo_hero_url || perfil.logo_url;
+  // Mostrar logo en el hero solo si existe URL en logo_hero_url
   const imgLote = document.getElementById('imgLote');
-  if (imgLote && urlHero) {
-    imgLote.src = urlHero;
-    imgLote.style.display = 'block';
+  if (imgLote) {
+    if (perfil.logo_hero_url && perfil.logo_hero_url.trim() !== '') {
+      imgLote.src = perfil.logo_hero_url;
+      imgLote.style.display = 'block';
+    } else {
+      imgLote.style.display = 'none';
+    }
   }
 
+  // Configuración de WhatsApp
   const rawWa = perfil.whatsapp || perfil.telefono || perfil.celular;
-
   if (rawWa) {
     let numClean = String(rawWa).replace(/[^0-9]/g, '');
     if (numClean.length === 10) {
@@ -624,7 +629,7 @@ async function cargarPerfilEmpresa(loteId) {
     actualizarEnlaceWhatsApp();
   }
 }
-
+  
 async function cargarCarros(){
   const urlParams = new URLSearchParams(window.location.search);
   const loteId = urlParams.get('lote');
