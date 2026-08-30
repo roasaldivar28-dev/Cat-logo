@@ -590,24 +590,32 @@ async function cargarPerfilEmpresa(loteId) {
   }
 
   const brandContainer = document.getElementById('header-brand-container');
-  const nombreLote = perfil.nombre_empresa ? perfil.nombre_empresa.toUpperCase() : 'CATÁLOGO';
+  let htmlBrand = '';
 
-  // Mostrar logo en el header solo si existe URL en logo_header_url
+  // 1. Imagen del Header (logo_header_url)
   if (perfil.logo_header_url && perfil.logo_header_url.trim() !== '') {
-    brandContainer.innerHTML = `
-      <img class="logo-header" src="${perfil.logo_header_url}" alt="${nombreLote}">
-    `;
-  } else {
-    // Si no hay logo_header_url, mostrar el texto de nombre_empresa
-    brandContainer.innerHTML = `
+    htmlBrand += `<img class="logo-header" src="${perfil.logo_header_url}" alt="Logo Header">`;
+  }
+
+  // 2. Evaluamos la columna nombre_empresa
+  const contenidoNombre = perfil.nombre_empresa ? perfil.nombre_empresa.trim() : '';
+
+  // Si la celda nombre_empresa empieza con http:// o https://, la renderiza como IMAGEN
+  if (contenidoNombre.startsWith('http://') || contenidoNombre.startsWith('https://')) {
+    htmlBrand += `<img class="logo-nombre" src="${contenidoNombre}" alt="Nombre Empresa" style="max-height: 45px; object-fit: contain;">`;
+  } else if (contenidoNombre !== '') {
+    // Si es texto normal, renderiza el diseño de texto habitual
+    htmlBrand += `
       <div class="brand-text-wrapper">
-        <div class="brand">${nombreLote} <span>/UNIDADES</span></div>
+        <div class="brand">${contenidoNombre.toUpperCase()} <span>/UNIDADES</span></div>
         <div class="brand-sub">ESCANEA · CONSULTA · COMPARA</div>
       </div>
     `;
   }
 
-  // Mostrar logo en el hero solo si existe URL en logo_hero_url
+  brandContainer.innerHTML = htmlBrand;
+
+  // 3. Imagen Hero (logo_hero_url)
   const imgLote = document.getElementById('imgLote');
   if (imgLote) {
     if (perfil.logo_hero_url && perfil.logo_hero_url.trim() !== '') {
@@ -629,6 +637,7 @@ async function cargarPerfilEmpresa(loteId) {
     actualizarEnlaceWhatsApp();
   }
 }
+  
   
 async function cargarCarros(){
   const urlParams = new URLSearchParams(window.location.search);
