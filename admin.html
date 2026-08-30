@@ -1,833 +1,956 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel Admin — Bazar Santa Monica</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #16161b;
-      --bg-vignette: radial-gradient(120% 120% at 50% -10%, #22222a 0%, #16161b 55%);
-      --surface: #1d1d24;
-      --surface-raised: #26262f;
-      --surface-sunken: #131317;
-      --border: #34343f;
-      --border-soft: #2a2a33;
-      --gold: #c6a15b;
-      --gold-bright: #e2c583;
-      --gold-dim: #8a713f;
-      --text: #ede9e2;
-      --text-muted: #a3a1ab;
-      --text-dim: #6c6b76;
-      --success: #6ba381;
-      --success-dim: #3a5947;
-      --warning: #d1a054;
-      --warning-dim: #6b5230;
-      --danger: #c26a66;
-      --danger-dim: #6b3a38;
-      --info: #7b9dbd;
-      --info-dim: #3f5468;
-      --radius-lg: 14px;
-      --radius-md: 10px;
-      --radius-sm: 7px;
-      --shadow-card: 0 1px 2px rgba(0,0,0,0.3), 0 12px 32px -12px rgba(0,0,0,0.55);
-    }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Admin — Bazar Santa Monica</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #16161b;
+      --bg-vignette: radial-gradient(120% 120% at 50% -10%, #22222a 0%, #16161b 55%);
+      --surface: #1d1d24;
+      --surface-raised: #26262f;
+      --surface-sunken: #131317;
+      --border: #34343f;
+      --border-soft: #2a2a33;
+      --gold: #c6a15b;
+      --gold-bright: #e2c583;
+      --gold-dim: #8a713f;
+      --text: #ede9e2;
+      --text-muted: #a3a1ab;
+      --text-dim: #6c6b76;
+      --success: #6ba381;
+      --success-dim: #3a5947;
+      --warning: #d1a054;
+      --warning-dim: #6b5230;
+      --danger: #c26a66;
+      --danger-dim: #6b3a38;
+      --info: #7b9dbd;
+      --info-dim: #3f5468;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+      --radius-sm: 7px;
+      --shadow-card: 0 1px 2px rgba(0,0,0,0.3), 0 12px 32px -12px rgba(0,0,0,0.55);
+    }
 
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; }
 
-    body {
-      background: var(--bg-vignette), var(--bg);
-      background-attachment: fixed;
-      color: var(--text);
-      font-family: 'Inter', -apple-system, sans-serif;
-      padding: 24px 16px 64px;
-      max-width: 760px;
-      margin: 0 auto;
-      line-height: 1.5;
-      -webkit-font-smoothing: antialiased;
-    }
+    body {
+      background: var(--bg-vignette), var(--bg);
+      background-attachment: fixed;
+      color: var(--text);
+      font-family: 'Inter', -apple-system, sans-serif;
+      padding: 24px 16px 64px;
+      max-width: 760px;
+      margin: 0 auto;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
 
-    h1, h2, h3 { font-family: 'Fraunces', serif; font-weight: 500; letter-spacing: -0.01em; margin: 0; }
+    h1, h2, h3 { font-family: 'Fraunces', serif; font-weight: 500; letter-spacing: -0.01em; margin: 0; }
 
-    .eyebrow {
-      font-family: 'Inter', sans-serif;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: var(--gold);
-      display: block;
-      margin-bottom: 6px;
-    }
+    .eyebrow {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold);
+      display: block;
+      margin-bottom: 6px;
+    }
 
-    .card {
-      background: linear-gradient(180deg, var(--surface) 0%, var(--surface-sunken) 100%);
-      padding: 26px 24px;
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border-soft);
-      margin-bottom: 22px;
-      box-shadow: var(--shadow-card);
-      position: relative;
-    }
-    .card::before {
-      content: "";
-      position: absolute;
-      top: 0; left: 24px; right: 24px;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--gold-dim) 50%, transparent);
-      opacity: 0.6;
-    }
+    .card {
+      background: linear-gradient(180deg, var(--surface) 0%, var(--surface-sunken) 100%);
+      padding: 26px 24px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-soft);
+      margin-bottom: 22px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 24px; right: 24px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dim) 50%, transparent);
+      opacity: 0.6;
+    }
 
-    .section-label {
-      font-family: 'Inter', sans-serif;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      margin: 26px 0 14px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--border-soft);
-    }
-    .section-label:first-of-type { margin-top: 4px; }
+    .section-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin: 26px 0 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .section-label:first-of-type { margin-top: 4px; }
 
-    .form-group { margin-bottom: 14px; }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-group { margin-bottom: 14px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
 
-    label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 500;
-      color: var(--text-muted);
-      font-size: 12.5px;
-      letter-spacing: 0.01em;
-    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: var(--text-muted);
+      font-size: 12.5px;
+      letter-spacing: 0.01em;
+    }
 
-    input, textarea, select {
-      width: 100%;
-      padding: 11px 13px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      background: var(--surface-sunken);
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-      font-size: 14.5px;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease;
-    }
-    input::placeholder, textarea::placeholder { color: var(--text-dim); }
-    input:focus, textarea:focus, select:focus {
-      outline: none;
-      border-color: var(--gold-dim);
-      box-shadow: 0 0 0 3px rgba(198, 161, 91, 0.14);
-    }
-    input:disabled {
-      background: #101013;
-      color: var(--text-dim);
-      cursor: not-allowed;
-      border-color: var(--border-soft);
-    }
+    input, textarea, select {
+      width: 100%;
+      padding: 11px 13px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface-sunken);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14.5px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    
+    input[type="color"] {
+      height: 44px;
+      padding: 4px;
+      cursor: pointer;
+    }
 
-    #id, #anio, #specPrecio, #specKm {
-      font-family: 'JetBrains Mono', monospace;
-      letter-spacing: 0.03em;
-    }
+    input::placeholder, textarea::placeholder { color: var(--text-dim); }
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--gold-dim);
+      box-shadow: 0 0 0 3px rgba(198, 161, 91, 0.14);
+    }
+    input:disabled {
+      background: #101013;
+      color: var(--text-dim);
+      cursor: not-allowed;
+      border-color: var(--border-soft);
+    }
 
-    input[type="file"] {
-      padding: 9px 10px;
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-    input[type="file"]::file-selector-button {
-      background: var(--surface-raised);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 6px 12px;
-      font-family: 'Inter', sans-serif;
-      font-size: 12.5px;
-      font-weight: 500;
-      margin-right: 10px;
-      cursor: pointer;
-    }
-    input[type="file"]::file-selector-button:hover { background: var(--surface); }
+    #id, #anio, #specPrecio, #specKm {
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.03em;
+    }
 
-    button {
-      background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 100%);
-      color: #201a0d;
-      font-weight: 600;
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      padding: 13px;
-      border: none;
-      width: 100%;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      letter-spacing: 0.01em;
-      transition: filter 0.15s ease, transform 0.05s ease;
-    }
-    button:hover { filter: brightness(1.08); }
-    button:active { transform: translateY(1px); }
-    button:disabled { opacity: 0.6; cursor: not-allowed; filter: none; }
+    input[type="file"] {
+      padding: 9px 10px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    input[type="file"]::file-selector-button {
+      background: var(--surface-raised);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 12.5px;
+      font-weight: 500;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+    input[type="file"]::file-selector-button:hover { background: var(--surface); }
 
-    .btn-cancel {
-      background: transparent;
-      color: var(--text-muted);
-      border: 1px solid var(--border);
-      margin-top: 10px;
-      font-weight: 500;
-    }
-    .btn-cancel:hover { background: var(--surface-raised); filter: none; color: var(--text); }
+    button {
+      background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 100%);
+      color: #201a0d;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      padding: 13px;
+      border: none;
+      width: 100%;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      letter-spacing: 0.01em;
+      transition: filter 0.15s ease, transform 0.05s ease;
+    }
+    button:hover { filter: brightness(1.08); }
+    button:active { transform: translateY(1px); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; filter: none; }
 
-    #loginCard { max-width: 380px; margin: 12vh auto 0; text-align: center; }
-    .login-mark {
-      width: 46px; height: 46px;
-      margin: 0 auto 18px;
-      border-radius: 50%;
-      border: 1px solid var(--gold-dim);
-      display: flex; align-items: center; justify-content: center;
-    }
-    .login-mark svg { width: 22px; height: 22px; stroke: var(--gold); }
-    #loginCard h2 { font-size: 24px; margin-bottom: 4px; }
-    #loginCard .eyebrow { text-align: center; }
-    #loginCard p.sub { color: var(--text-dim); font-size: 13px; margin: 6px 0 22px; }
-    #loginCard form { text-align: left; }
+    .btn-cancel {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      margin-top: 10px;
+      font-weight: 500;
+    }
+    .btn-cancel:hover { background: var(--surface-raised); filter: none; color: var(--text); }
 
-    #adminPanel { display: none; }
+    #loginCard { max-width: 380px; margin: 12vh auto 0; text-align: center; }
+    .login-mark {
+      width: 46px; height: 46px;
+      margin: 0 auto 18px;
+      border-radius: 50%;
+      border: 1px solid var(--gold-dim);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .login-mark svg { width: 22px; height: 22px; stroke: var(--gold); }
+    #loginCard h2 { font-size: 24px; margin-bottom: 4px; }
+    #loginCard .eyebrow { text-align: center; }
+    #loginCard p.sub { color: var(--text-dim); font-size: 13px; margin: 6px 0 22px; }
+    #loginCard form { text-align: left; }
 
-    .header-bar {
-      display: flex; justify-content: space-between; align-items: flex-end;
-      margin-bottom: 26px; padding-bottom: 18px;
-      border-bottom: 1px solid var(--border-soft);
-    }
-    .header-bar h1 { font-size: 26px; text-align: left; }
-    .btn-logout {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      width: auto; padding: 9px 16px;
-      font-size: 12.5px; font-weight: 500;
-      border-radius: 8px;
-    }
-    .btn-logout:hover { border-color: var(--danger); color: var(--danger); filter: none; }
+    #adminPanel { display: none; }
 
-    .item-row {
-      display: flex; align-items: center; justify-content: space-between;
-      background: var(--surface-raised);
-      padding: 14px 16px 14px 14px;
-      border-radius: var(--radius-md);
-      margin-bottom: 10px;
-      border: 1px solid var(--border-soft);
-      border-left: 3px solid var(--text-dim);
-      flex-wrap: wrap; gap: 12px;
-    }
-    .item-row[data-estado="DISPONIBLE"] { border-left-color: var(--success); }
-    .item-row[data-estado="APARTADO"] { border-left-color: var(--warning); }
-    .item-row[data-estado="VENDIDO"] { border-left-color: var(--danger); }
+    .header-bar {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      margin-bottom: 26px; padding-bottom: 18px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .header-bar h1 { font-size: 26px; text-align: left; }
+    .btn-logout {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      width: auto; padding: 9px 16px;
+      font-size: 12.5px; font-weight: 500;
+      border-radius: 8px;
+    }
+    .btn-logout:hover { border-color: var(--danger); color: var(--danger); filter: none; }
 
-    .item-info { flex: 1; min-width: 190px; }
-    .item-id {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      color: var(--text-dim);
-      letter-spacing: 0.04em;
-    }
-    .item-name { font-family: 'Fraunces', serif; font-size: 16.5px; margin: 2px 0 6px; }
-    .item-status {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
-    }
-    .item-status .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); }
-    .item-row[data-estado="DISPONIBLE"] .item-status { color: var(--success); }
-    .item-row[data-estado="DISPONIBLE"] .dot { background: var(--success); box-shadow: 0 0 6px var(--success); }
-    .item-row[data-estado="APARTADO"] .item-status { color: var(--warning); }
-    .item-row[data-estado="APARTADO"] .dot { background: var(--warning); box-shadow: 0 0 6px var(--warning); }
-    .item-row[data-estado="VENDIDO"] .item-status { color: var(--danger); }
-    .item-row[data-estado="VENDIDO"] .dot { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
+    .item-row {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--surface-raised);
+      padding: 14px 16px 14px 14px;
+      border-radius: var(--radius-md);
+      margin-bottom: 10px;
+      border: 1px solid var(--border-soft);
+      border-left: 3px solid var(--text-dim);
+      flex-wrap: wrap; gap: 12px;
+    }
+    .item-row[data-estado="DISPONIBLE"] { border-left-color: var(--success); }
+    .item-row[data-estado="APARTADO"] { border-left-color: var(--warning); }
+    .item-row[data-estado="VENDIDO"] { border-left-color: var(--danger); }
 
-    .item-actions { display: flex; gap: 6px; flex-wrap: wrap; }
-    .btn-sm {
-      padding: 7px 11px; font-size: 11.5px; border-radius: 6px; width: auto;
-      font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase;
-      border: 1px solid transparent;
-    }
-    .btn-edit { background: transparent; border-color: var(--info-dim); color: var(--info); }
-    .btn-edit:hover { background: rgba(123,157,189,0.12); filter: none; }
-    .btn-disp { background: transparent; border-color: var(--success-dim); color: var(--success); }
-    .btn-disp:hover { background: rgba(107,163,129,0.12); filter: none; }
-    .btn-apar { background: transparent; border-color: var(--warning-dim); color: var(--warning); }
-    .btn-apar:hover { background: rgba(209,160,84,0.12); filter: none; }
-    .btn-vend { background: transparent; border-color: var(--danger-dim); color: var(--danger); }
-    .btn-vend:hover { background: rgba(194,106,102,0.12); filter: none; }
-    .btn-del { background: transparent; border-color: var(--border); color: var(--text-dim); }
-    .btn-del:hover { background: var(--surface); color: var(--danger); filter: none; }
-    .btn-qr { background: var(--gold-dim); border-color: var(--gold-dim); color: #f3e6c8; }
-    .btn-qr:hover { filter: brightness(1.15); }
+    .item-info { flex: 1; min-width: 190px; }
+    .item-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.04em;
+    }
+    .item-name { font-family: 'Fraunces', serif; font-size: 16.5px; margin: 2px 0 6px; }
+    .item-status {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .item-status .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); }
+    .item-row[data-estado="DISPONIBLE"] .item-status { color: var(--success); }
+    .item-row[data-estado="DISPONIBLE"] .dot { background: var(--success); box-shadow: 0 0 6px var(--success); }
+    .item-row[data-estado="APARTADO"] .item-status { color: var(--warning); }
+    .item-row[data-estado="APARTADO"] .dot { background: var(--warning); box-shadow: 0 0 6px var(--warning); }
+    .item-row[data-estado="VENDIDO"] .item-status { color: var(--danger); }
+    .item-row[data-estado="VENDIDO"] .dot { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
 
-    #listaInventario > p { color: var(--text-dim); font-size: 14px; text-align: center; padding: 20px 0; }
+    .item-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .btn-sm {
+      padding: 7px 11px; font-size: 11.5px; border-radius: 6px; width: auto;
+      font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase;
+      border: 1px solid transparent;
+    }
+    .btn-edit { background: transparent; border-color: var(--info-dim); color: var(--info); }
+    .btn-edit:hover { background: rgba(123,157,189,0.12); filter: none; }
+    .btn-disp { background: transparent; border-color: var(--success-dim); color: var(--success); }
+    .btn-disp:hover { background: rgba(107,163,129,0.12); filter: none; }
+    .btn-apar { background: transparent; border-color: var(--warning-dim); color: var(--warning); }
+    .btn-apar:hover { background: rgba(209,160,84,0.12); filter: none; }
+    .btn-vend { background: transparent; border-color: var(--danger-dim); color: var(--danger); }
+    .btn-vend:hover { background: rgba(194,106,102,0.12); filter: none; }
+    .btn-del { background: transparent; border-color: var(--border); color: var(--text-dim); }
+    .btn-del:hover { background: var(--surface); color: var(--danger); filter: none; }
+    .btn-qr { background: var(--gold-dim); border-color: var(--gold-dim); color: #f3e6c8; }
+    .btn-qr:hover { filter: brightness(1.15); }
 
-    #qrModal {
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(10,10,12,0.82); backdrop-filter: blur(3px);
-      align-items: center; justify-content: center; z-index: 1000; padding: 20px;
-    }
-    .modal-content {
-      background: #f7f4ee; color: #1a1a1a;
-      padding: 28px 26px; border-radius: 12px; text-align: center; max-width: 320px;
-      border: 1px solid #ddd6c4;
-      box-shadow: 0 24px 60px -12px rgba(0,0,0,0.6);
-    }
-    .modal-content h3 { font-family: 'Fraunces', serif; font-size: 19px; color: #1a1a1a; }
-    .modal-content .eyebrow { color: var(--gold-dim); }
-    .modal-content p.hint { font-size: 12px; color: #7a7568; margin: 14px 0 18px; }
-    .modal-content button {
-      margin-bottom: 8px; border-radius: 7px; font-size: 13px; padding: 11px;
-    }
-    .btn-modal-download { background: #2b3f52; color: #fff; }
-    .btn-modal-print { background: #35513f; color: #fff; }
-    .btn-modal-close { background: transparent; border: 1px solid #ddd6c4; color: #55503f; }
+    #listaInventario > p { color: var(--text-dim); font-size: 14px; text-align: center; padding: 20px 0; }
 
-    @media print {
-      body * { visibility: hidden; }
-      #qrModal, #qrModal * { visibility: visible; }
-      #qrModal { position: absolute; left: 0; top: 0; width: 100%; background: #fff; backdrop-filter: none; }
-      .no-print { display: none; }
-    }
+    #qrModal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(10,10,12,0.82); backdrop-filter: blur(3px);
+      align-items: center; justify-content: center; z-index: 1000; padding: 20px;
+    }
+    .modal-content {
+      background: #f7f4ee; color: #1a1a1a;
+      padding: 28px 26px; border-radius: 12px; text-align: center; max-width: 320px;
+      border: 1px solid #ddd6c4;
+      box-shadow: 0 24px 60px -12px rgba(0,0,0,0.6);
+    }
+    .modal-content h3 { font-family: 'Fraunces', serif; font-size: 19px; color: #1a1a1a; }
+    .modal-content .eyebrow { color: var(--gold-dim); }
+    .modal-content p.hint { font-size: 12px; color: #7a7568; margin: 14px 0 18px; }
+    .modal-content button {
+      margin-bottom: 8px; border-radius: 7px; font-size: 13px; padding: 11px;
+    }
+    .btn-modal-download { background: #2b3f52; color: #fff; }
+    .btn-modal-print { background: #35513f; color: #fff; }
+    .btn-modal-close { background: transparent; border: 1px solid #ddd6c4; color: #55503f; }
 
-    @media (max-width: 480px) {
-      .grid-2 { grid-template-columns: 1fr; }
-      .header-bar { flex-direction: column; align-items: flex-start; gap: 12px; }
-      .item-actions { width: 100%; }
-    }
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    @media print {
+      body * { visibility: hidden; }
+      #qrModal, #qrModal * { visibility: visible; }
+      #qrModal { position: absolute; left: 0; top: 0; width: 100%; background: #fff; backdrop-filter: none; }
+      .no-print { display: none; }
+    }
+
+    @media (max-width: 480px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .header-bar { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .item-actions { width: 100%; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
-  <!-- INICIO DE SESIÓN -->
-  <div id="loginCard" class="card">
-    <div class="login-mark">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 13l1.5-4.5A2 2 0 0 1 6.4 7h11.2a2 2 0 0 1 1.9 1.5L21 13"></path>
-        <path d="M3 13h18v4a1 1 0 0 1-1 1h-1.5a1 1 0 0 1-1-1v-1H6.5v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4z"></path>
-        <circle cx="7" cy="17.5" r="0.6" fill="currentColor"></circle>
-        <circle cx="17" cy="17.5" r="0.6" fill="currentColor"></circle>
-      </svg>
-    </div>
-    <span class="eyebrow">Bazar Santa Monica</span>
-    <h2>Panel de Administrador</h2>
-    <p class="sub">Inicia sesión para gestionar el inventario</p>
-    <form id="loginForm">
-      <div class="form-group">
-        <label>Correo Electrónico</label>
-        <input type="email" id="loginEmail" required placeholder="correo@ejemplo.com">
-      </div>
-      <div class="form-group">
-        <label>Contraseña</label>
-        <input type="password" id="loginPassword" required placeholder="••••••••">
-      </div>
-      <button type="submit" id="btnLogin">Entrar al Panel</button>
-    </form>
-  </div>
+  <!-- INICIO DE SESIÓN -->
+  <div id="loginCard" class="card">
+    <div class="login-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 13l1.5-4.5A2 2 0 0 1 6.4 7h11.2a2 2 0 0 1 1.9 1.5L21 13"></path>
+        <path d="M3 13h18v4a1 1 0 0 1-1 1h-1.5a1 1 0 0 1-1-1v-1H6.5v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4z"></path>
+        <circle cx="7" cy="17.5" r="0.6" fill="currentColor"></circle>
+        <circle cx="17" cy="17.5" r="0.6" fill="currentColor"></circle>
+      </svg>
+    </div>
+    <span class="eyebrow">Bazar Santa Monica</span>
+    <h2>Panel de Administrador</h2>
+    <p class="sub">Inicia sesión para gestionar el inventario</p>
+    <form id="loginForm">
+      <div class="form-group">
+        <label>Correo Electrónico</label>
+        <input type="email" id="loginEmail" required placeholder="correo@ejemplo.com">
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="loginPassword" required placeholder="••••••••">
+      </div>
+      <button type="submit" id="btnLogin">Entrar al Panel</button>
+    </form>
+  </div>
 
-  <!-- PANEL DE ADMINISTRACIÓN -->
-  <div id="adminPanel">
-    <div class="header-bar">
-      <div>
-        <span class="eyebrow">Bazar Santa Monica</span>
-        <h1>Panel de Administrador</h1>
-      </div>
-      <button onclick="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
-    </div>
+  <!-- PANEL DE ADMINISTRACIÓN -->
+  <div id="adminPanel">
+    <div class="header-bar">
+      <div>
+        <span class="eyebrow">Bazar Santa Monica</span>
+        <h1>Panel de Administrador</h1>
+      </div>
+      <button onclick="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
+    </div>
 
-    <!-- FORMULARIO DE REGISTRO / EDICIÓN -->
-    <div class="card">
-      <span class="eyebrow">Inventario</span>
-      <h2 id="formTitle">Agregar Nueva Unidad</h2>
+    <!-- FORMULARIO DE REGISTRO / EDICIÓN -->
+    <div class="card">
+      <span class="eyebrow">Inventario</span>
+      <h2 id="formTitle">Agregar Nueva Unidad</h2>
 
-      <form id="carForm">
-        <div class="section-label">Identificación</div>
-        <div class="form-group">
-          <label>ID / Clave (#X35, #A3)</label>
-          <input type="text" id="id" required placeholder="ej. X35">
-        </div>
+      <form id="carForm">
+        <div class="section-label">Identificación</div>
+        <div class="form-group">
+          <label>ID / Clave (#X35, #A3)</label>
+          <input type="text" id="id" required placeholder="ej. X35">
+        </div>
 
-        <div class="grid-2">
-          <div class="form-group">
-            <label>Marca</label>
-            <input type="text" id="marca" required placeholder="ej. BAIC">
-          </div>
-          <div class="form-group">
-            <label>Modelo</label>
-            <input type="text" id="modelo" required placeholder="ej. X35">
-          </div>
-        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Marca</label>
+            <input type="text" id="marca" required placeholder="ej. BAIC">
+          </div>
+          <div class="form-group">
+            <label>Modelo</label>
+            <input type="text" id="modelo" required placeholder="ej. X35">
+          </div>
+        </div>
 
-        <div class="form-group">
-          <label>Año</label>
-          <input type="number" id="anio" required placeholder="ej. 2023">
-        </div>
+        <div class="form-group">
+          <label>Año</label>
+          <input type="number" id="anio" required placeholder="ej. 2023">
+        </div>
 
-        <!-- ESPECIFICACIONES TÉCNICAS (SPECS) -->
-        <div class="section-label">Ficha Técnica</div>
+        <!-- ESPECIFICACIONES TÉCNICAS (SPECS) -->
+        <div class="section-label">Ficha Técnica</div>
 
-        <div class="grid-2">
-          <div class="form-group">
-            <label>Color</label>
-            <input type="text" id="specColor" required placeholder="ej. Blanco">
-          </div>
-          <div class="form-group">
-            <label>Motor</label>
-            <input type="text" id="specMotor" required placeholder="ej. 1.5L 4 cil.">
-          </div>
-        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Color</label>
+            <input type="text" id="specColor" required placeholder="ej. Blanco">
+          </div>
+          <div class="form-group">
+            <label>Motor</label>
+            <input type="text" id="specMotor" required placeholder="ej. 1.5L 4 cil.">
+          </div>
+        </div>
 
-        <div class="grid-2">
-          <div class="form-group">
-            <label>Precio ($ MXN sin comas)</label>
-            <input type="number" id="specPrecio" required placeholder="ej. 215000">
-          </div>
-          <div class="form-group">
-            <label>Potencia</label>
-            <input type="text" id="specPotencia" required placeholder="ej. 113 hp">
-          </div>
-        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Precio ($ MXN sin comas)</label>
+            <input type="number" id="specPrecio" required placeholder="ej. 215000">
+          </div>
+          <div class="form-group">
+            <label>Potencia</label>
+            <input type="text" id="specPotencia" required placeholder="ej. 113 hp">
+          </div>
+        </div>
 
-        <div class="grid-2">
-          <div class="form-group">
-            <label>Tracción</label>
-            <input type="text" id="specTraccion" required placeholder="ej. Delantera">
-          </div>
-          <div class="form-group">
-            <label>Kilometraje (número sin comas)</label>
-            <input type="number" id="specKm" required placeholder="ej. 42000">
-          </div>
-        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Tracción</label>
+            <input type="text" id="specTraccion" required placeholder="ej. Delantera">
+          </div>
+          <div class="form-group">
+            <label>Kilometraje (número sin comas)</label>
+            <input type="number" id="specKm" required placeholder="ej. 42000">
+          </div>
+        </div>
 
-        <div class="form-group">
-          <label>Transmisión</label>
-          <input type="text" id="specTransmision" required placeholder="ej. CVT / Automática">
-        </div>
+        <div class="form-group">
+          <label>Transmisión</label>
+          <input type="text" id="specTransmision" required placeholder="ej. CVT / Automática">
+        </div>
 
-        <!-- FOTOS -->
-        <div class="section-label">Fotografías</div>
-        <div class="form-group">
-          <label id="lblPortada">Foto de Portada (1 sola foto principal)</label>
-          <input type="file" id="fotoPortada" accept="image/*">
-        </div>
-        <div class="form-group">
-          <label id="lblGaleria">Galería de Fotos (puedes seleccionar varias)</label>
-          <input type="file" id="fotosGaleria" accept="image/*" multiple>
-        </div>
+        <!-- FOTOS -->
+        <div class="section-label">Fotografías</div>
+        <div class="form-group">
+          <label id="lblPortada">Foto de Portada (1 sola foto principal)</label>
+          <input type="file" id="fotoPortada" accept="image/*">
+        </div>
+        <div class="form-group">
+          <label id="lblGaleria">Galería de Fotos (puedes seleccionar varias)</label>
+          <input type="file" id="fotosGaleria" accept="image/*" multiple>
+        </div>
 
-        <!-- DESCRIPCIÓN Y PUNTOS CLAVE -->
-        <div class="section-label">Descripción</div>
-        <div class="form-group">
-          <label>Puntos Clave (separados por coma)</label>
-          <textarea id="descripcion" rows="3" placeholder="Factura Original, Único dueño, Servicios de agencia, Pagos al corriente"></textarea>
-        </div>
+        <!-- DESCRIPCIÓN Y PUNTOS CLAVE -->
+        <div class="section-label">Descripción</div>
+        <div class="form-group">
+          <label>Puntos Clave (separados por coma)</label>
+          <textarea id="descripcion" rows="3" placeholder="Factura Original, Único dueño, Servicios de agencia, Pagos al corriente"></textarea>
+        </div>
 
-        <button type="submit" id="btnGuardar">Guardar y Publicar</button>
-        <button type="button" id="btnCancelar" class="btn-cancel" style="display:none;" onclick="cancelarEdicion()">Cancelar Edición</button>
-      </form>
-    </div>
+        <button type="submit" id="btnGuardar">Guardar y Publicar</button>
+        <button type="button" id="btnCancelar" class="btn-cancel" style="display:none;" onclick="cancelarEdicion()">Cancelar Edición</button>
+      </form>
+    </div>
 
-    <!-- INVENTARIO -->
-    <div class="card">
-      <span class="eyebrow">Existencias</span>
-      <h2>Inventario de Unidades</h2>
-      <div id="listaInventario" style="margin-top:18px;">Cargando inventario...</div>
-    </div>
-  </div>
+    <!-- SECCIÓN DE PERSONALIZACIÓN VISUAL -->
+    <div class="card">
+      <span class="eyebrow">Personalización</span>
+      <h2>Tema Visual del Catálogo</h2>
 
-  <!-- MODAL QR -->
-  <div id="qrModal">
-    <div class="modal-content">
-      <span class="eyebrow">Ficha Digital</span>
-      <h3 id="qrTitulo" style="margin-top:2px;">Ficha del Auto</h3>
-      <div id="qrcode" style="display:flex; justify-content:center; margin: 16px 0;"></div>
-      <p class="hint">Escanéame para ver detalles completos en línea</p>
+      <form id="formEstilos" style="margin-top: 18px;">
+        <div class="form-group">
+          <label for="estiloFuente">Tipografía Principal</label>
+          <select id="estiloFuente">
+            <option value="'Inter', sans-serif">Inter (Moderna / Limpia)</option>
+            <option value="'Segoe UI', Roboto, sans-serif">Segoe UI (Estándar)</option>
+            <option value="'Montserrat', sans-serif">Montserrat (Elegante)</option>
+            <option value="'Poppins', sans-serif">Poppins (Geométrica)</option>
+            <option value="'Georgia', serif">Georgia (Clásica / Serif)</option>
+          </select>
+        </div>
 
-      <button onclick="descargarQR()" class="no-print btn-modal-download">Descargar Imagen QR</button>
-      <button onclick="window.print()" class="no-print btn-modal-print">Imprimir QR</button>
-      <button onclick="cerrarQR()" class="no-print btn-modal-close">Cerrar</button>
-    </div>
-  </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="colorFondo">Fondo de Página</label>
+            <input type="color" id="colorFondo" value="#16161b">
+          </div>
+          <div class="form-group">
+            <label for="colorTexto">Texto Principal</label>
+            <input type="color" id="colorTexto" value="#ede9e2">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="colorTarjeta">Fondo de Tarjetas de Autos</label>
+          <input type="color" id="colorTarjeta" value="#1d1d24">
+        </div>
+
+        <div class="section-label">Colores de Etiquetas de Estado</div>
+        <div class="grid-3">
+          <div class="form-group">
+            <label for="colorEtiquetaDispo">Disponible</label>
+            <input type="color" id="colorEtiquetaDispo" value="#6ba381">
+          </div>
+          <div class="form-group">
+            <label for="colorEtiquetaApart">Apartado</label>
+            <input type="color" id="colorEtiquetaApart" value="#d1a054">
+          </div>
+          <div class="form-group">
+            <label for="colorEtiquetaVend">Vendido</label>
+            <input type="color" id="colorEtiquetaVend" value="#c26a66">
+          </div>
+        </div>
+
+        <button type="submit" id="btnGuardarEstilos" style="margin-top: 10px;">Guardar Tema Visual</button>
+      </form>
+    </div>
+
+    <!-- INVENTARIO -->
+    <div class="card">
+      <span class="eyebrow">Existencias</span>
+      <h2>Inventario de Unidades</h2>
+      <div id="listaInventario" style="margin-top:18px;">Cargando inventario...</div>
+    </div>
+  </div>
+
+  <!-- MODAL QR -->
+  <div id="qrModal">
+    <div class="modal-content">
+      <span class="eyebrow">Ficha Digital</span>
+      <h3 id="qrTitulo" style="margin-top:2px;">Ficha del Auto</h3>
+      <div id="qrcode" style="display:flex; justify-content:center; margin: 16px 0;"></div>
+      <p class="hint">Escanéame para ver detalles completos en línea</p>
+
+      <button onclick="descargarQR()" class="no-print btn-modal-download">Descargar Imagen QR</button>
+      <button onclick="window.print()" class="no-print btn-modal-print">Imprimir QR</button>
+      <button onclick="cerrarQR()" class="no-print btn-modal-close">Cerrar</button>
+    </div>
+  </div>
 
 <script>
-  const SUPABASE_URL = "https://xkhoorjntavmzhuikauj.supabase.co"; 
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhraG9vcmpudGF2bXpodWlrYXVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3ODY2OTMsImV4cCI6MjEwMzM2MjY5M30.PHBKRKmvDtFMSE0Csy01Qo82s9e8DKXWBicf7JrSHz4"; 
-  
-  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  const BASE_URL_CATALOGO = "https://roasaldivar28-dev.github.io/Cat-logo/";
+  const SUPABASE_URL = "https://xkhoorjntavmzhuikauj.supabase.co"; 
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhraG9vcmpudGF2bXpodWlrYXVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3ODY2OTMsImV4cCI6MjEwMzM2MjY5M30.PHBKRKmvDtFMSE0Csy01Qo82s9e8DKXWBicf7JrSHz4"; 
+  
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const BASE_URL_CATALOGO = "https://roasaldivar28-dev.github.io/Cat-logo/";
 
-  let editandoId = null;
-  let fotosExistentes = { portada: '', galeria: [] };
-  let idActualQR = '';
-  let inventarioLocal = [];
+  let editandoId = null;
+  let fotosExistentes = { portada: '', galeria: [] };
+  let idActualQR = '';
+  let inventarioLocal = [];
 
-  // 1. Manejo dinámico del estado de autenticación de Supabase
-  supabaseClient.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_IN' && session) {
-      mostrarPanel();
-    } else if (event === 'SIGNED_OUT' || !session) {
-      mostrarLogin();
-    }
-  });
+  // 1. Manejo dinámico del estado de autenticación de Supabase
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      mostrarPanel();
+    } else if (event === 'SIGNED_OUT' || !session) {
+      mostrarLogin();
+    }
+  });
 
-  document.addEventListener("DOMContentLoaded", async () => {
-    try {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (session) {
-        mostrarPanel();
-      } else {
-        mostrarLogin();
-      }
-    } catch (err) {
-      console.error("Error comprobando sesión:", err);
-      mostrarLogin();
-    }
-  });
+  document.addEventListener("DOMContentLoaded", async () => {
+    try {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) {
+        mostrarPanel();
+      } else {
+        mostrarLogin();
+      }
+    } catch (err) {
+      console.error("Error comprobando sesión:", err);
+      mostrarLogin();
+    }
+  });
 
-  document.getElementById('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const btn = document.getElementById('btnLogin');
-    btn.innerText = "Iniciando sesión...";
-    btn.disabled = true;
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnLogin');
+    btn.innerText = "Iniciando sesión...";
+    btn.disabled = true;
 
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value.trim();
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
 
-    try {
-      // Intentar cerrar cualquier sesión residual activa antes de iniciar una nueva
-      await supabaseClient.auth.signOut();
+    try {
+      await supabaseClient.auth.signOut();
 
-      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
-      if (error) {
-        alert("Error de autenticación: " + error.message);
-      } else {
-        mostrarPanel();
-      }
-    } catch (err) {
-      alert("Error de conexión: " + err.message);
-    } finally {
-      btn.innerText = "Entrar al Panel";
-      btn.disabled = false;
-    }
-  });
+      if (error) {
+        alert("Error de autenticación: " + error.message);
+      } else {
+        mostrarPanel();
+      }
+    } catch (err) {
+      alert("Error de conexión: " + err.message);
+    } finally {
+      btn.innerText = "Entrar al Panel";
+      btn.disabled = false;
+    }
+  });
 
-  // 2. Cierre de sesión seguro y limpieza de estado
-  async function cerrarSesion() {
-    try {
-      await supabaseClient.auth.signOut();
-    } catch (err) {
-      console.error("Error al cerrar sesión:", err);
-    } finally {
-      // Limpiar datos en memoria
-      inventarioLocal = [];
-      editandoId = null;
-      fotosExistentes = { portada: '', galeria: [] };
-      
-      // Limpiar almacenamiento local y recargar vista limpiamente
-      localStorage.clear();
-      sessionStorage.clear();
-      mostrarLogin();
-    }
-  }
+  // 2. Cierre de sesión seguro y limpieza de estado
+  async function cerrarSesion() {
+    try {
+      await supabaseClient.auth.signOut();
+    } catch (err) {
+      console.error("Error al cerrar sesión:", err);
+    } finally {
+      inventarioLocal = [];
+      editandoId = null;
+      fotosExistentes = { portada: '', galeria: [] };
+      
+      localStorage.clear();
+      sessionStorage.clear();
+      mostrarLogin();
+    }
+  }
 
-  function mostrarPanel() {
-    document.getElementById('loginCard').style.display = 'none';
-    document.getElementById('adminPanel').style.display = 'block';
-    cargarInventario();
-  }
+  function mostrarPanel() {
+    document.getElementById('loginCard').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'block';
+    cargarInventario();
+    cargarEstilosPerfil();
+  }
 
-  function mostrarLogin() {
-    document.getElementById('loginCard').style.display = 'block';
-    document.getElementById('adminPanel').style.display = 'none';
-    document.getElementById('listaInventario').innerHTML = '';
-    document.getElementById('loginForm').reset();
-  }
+  function mostrarLogin() {
+    document.getElementById('loginCard').style.display = 'block';
+    document.getElementById('adminPanel').style.display = 'none';
+    document.getElementById('listaInventario').innerHTML = '';
+    document.getElementById('loginForm').reset();
+  }
 
-  async function cargarInventario() {
-    const contenedor = document.getElementById('listaInventario');
-    contenedor.innerHTML = "<p>Cargando inventario...</p>";
-    
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) {
-      mostrarLogin();
-      return;
-    }
+  async function cargarInventario() {
+    const contenedor = document.getElementById('listaInventario');
+    contenedor.innerHTML = "<p>Cargando inventario...</p>";
+    
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) {
+      mostrarLogin();
+      return;
+    }
 
-    const { data: carros, error } = await supabaseClient
-      .from('carros')
-      .select('*')
-      .eq('empresa_id', session.user.id);
+    const { data: carros, error } = await supabaseClient
+      .from('carros')
+      .select('*')
+      .eq('empresa_id', session.user.id);
 
-    if (error) {
-      contenedor.innerHTML = "<p style='color:#c26a66'>Error al cargar inventario: " + error.message + "</p>";
-      return;
-    }
+    if (error) {
+      contenedor.innerHTML = "<p style='color:#c26a66'>Error al cargar inventario: " + error.message + "</p>";
+      return;
+    }
 
-    inventarioLocal = carros || [];
+    inventarioLocal = carros || [];
 
-    if (!carros || carros.length === 0) {
-      contenedor.innerHTML = "<p>No hay carros registrados aún.</p>";
-      return;
-    }
+    if (!carros || carros.length === 0) {
+      contenedor.innerHTML = "<p>No hay carros registrados aún.</p>";
+      return;
+    }
 
-    contenedor.innerHTML = carros.map(c => `
-      <div class="item-row" data-estado="${c.estado || 'DISPONIBLE'}">
-        <div class="item-info">
-          <div class="item-id">#${c.id}</div>
-          <div class="item-name">${c.marca} ${c.modelo} · ${c.anio}</div>
-          <span class="item-status"><span class="dot"></span>${c.estado || 'DISPONIBLE'}</span>
-        </div>
-        <div class="item-actions">
-          <button class="btn-sm btn-edit" onclick="prepararEdicion('${c.id}')">Editar</button>
-          <button class="btn-sm btn-disp" onclick="cambiarEstado('${c.id}', 'DISPONIBLE')">Dispo</button>
-          <button class="btn-sm btn-apar" onclick="cambiarEstado('${c.id}', 'APARTADO')">Apart</button>
-          <button class="btn-sm btn-vend" onclick="cambiarEstado('${c.id}', 'VENDIDO')">Vend</button>
-          <button class="btn-sm btn-qr" onclick="generarQR('${c.id}')">QR</button>
-          <button class="btn-sm btn-del" onclick="eliminarCarro('${c.id}')">Eliminar</button>
-        </div>
-      </div>
-    `).join('');
-  }
+    contenedor.innerHTML = carros.map(c => `
+      <div class="item-row" data-estado="${c.estado || 'DISPONIBLE'}">
+        <div class="item-info">
+          <div class="item-id">#${c.id}</div>
+          <div class="item-name">${c.marca} ${c.modelo} · ${c.anio}</div>
+          <span class="item-status"><span class="dot"></span>${c.estado || 'DISPONIBLE'}</span>
+        </div>
+        <div class="item-actions">
+          <button class="btn-sm btn-edit" onclick="prepararEdicion('${c.id}')">Editar</button>
+          <button class="btn-sm btn-disp" onclick="cambiarEstado('${c.id}', 'DISPONIBLE')">Dispo</button>
+          <button class="btn-sm btn-apar" onclick="cambiarEstado('${c.id}', 'APARTADO')">Apart</button>
+          <button class="btn-sm btn-vend" onclick="cambiarEstado('${c.id}', 'VENDIDO')">Vend</button>
+          <button class="btn-sm btn-qr" onclick="generarQR('${c.id}')">QR</button>
+          <button class="btn-sm btn-del" onclick="eliminarCarro('${c.id}')">Eliminar</button>
+        </div>
+      </div>
+    `).join('');
+  }
 
-  async function subirImagen(file) {
-    const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}_${file.name.replace(/\s+/g, '_')}`;
-    const { error: storageError } = await supabaseClient.storage.from('fotos-carros').upload(fileName, file);
-    if (storageError) throw storageError;
+  // Cargar los estilos existentes guardados en el perfil
+  async function cargarEstilosPerfil() {
+    try {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) return;
 
-    const { data: publicUrlData } = supabaseClient.storage.from('fotos-carros').getPublicUrl(fileName);
-    return publicUrlData.publicUrl;
-  }
+      const { data, error } = await supabaseClient
+        .from('perfiles')
+        .select('estilos')
+        .eq('id', session.user.id)
+        .maybeSingle();
 
-  function formatearPrecio(val) {
-    const num = parseInt(val) || 0;
-    return '$' + num.toLocaleString('en-US') + ' MXN';
-  }
+      if (error) return console.error("Error obteniendo estilos:", error.message);
 
-  function formatearKm(val) {
-    const num = parseInt(val) || 0;
-    return num.toLocaleString('en-US') + ' km';
-  }
+      if (data && data.estilos) {
+        const e = data.estilos;
+        if (e.fuente) document.getElementById('estiloFuente').value = e.fuente;
+        if (e.colorFondo) document.getElementById('colorFondo').value = e.colorFondo;
+        if (e.colorTexto) document.getElementById('colorTexto').value = e.colorTexto;
+        if (e.colorTarjeta) document.getElementById('colorTarjeta').value = e.colorTarjeta;
+        if (e.colorEtiquetaDispo) document.getElementById('colorEtiquetaDispo').value = e.colorEtiquetaDispo;
+        if (e.colorEtiquetaApart) document.getElementById('colorEtiquetaApart').value = e.colorEtiquetaApart;
+        if (e.colorEtiquetaVend) document.getElementById('colorEtiquetaVend').value = e.colorEtiquetaVend;
+      }
+    } catch (err) {
+      console.error("Error al cargar estilos:", err);
+    }
+  }
 
-  async function prepararEdicion(id) {
-    const carro = inventarioLocal.find(item => item.id == id);
-    if (!carro) return;
+  // Guardar estilos en la tabla perfiles
+  document.getElementById('formEstilos').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnGuardarEstilos');
+    btn.innerText = "Guardando...";
+    btn.disabled = true;
 
-    editandoId = id;
-    fotosExistentes = { portada: carro.portada || '', galeria: carro.fotos || [] };
+    try {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) throw new Error("No hay una sesión activa.");
 
-    document.getElementById('id').value = carro.id;
-    document.getElementById('id').disabled = true;
-    document.getElementById('marca').value = carro.marca || '';
-    document.getElementById('modelo').value = carro.modelo || '';
-    document.getElementById('anio').value = carro.anio || '';
-    
-    const specs = carro.specs || {};
+      const nuevosEstilos = {
+        fuente: document.getElementById('estiloFuente').value,
+        colorFondo: document.getElementById('colorFondo').value,
+        colorTexto: document.getElementById('colorTexto').value,
+        colorTarjeta: document.getElementById('colorTarjeta').value,
+        colorEtiquetaDispo: document.getElementById('colorEtiquetaDispo').value,
+        colorEtiquetaApart: document.getElementById('colorEtiquetaApart').value,
+        colorEtiquetaVend: document.getElementById('colorEtiquetaVend').value
+      };
 
-    const rawPrecio = specs["Precio"] ? specs["Precio"].replace(/[^0-9]/g, '') : '';
-    const rawKm = specs["Kilometraje"] ? specs["Kilometraje"].replace(/[^0-9]/g, '') : '';
+      const { error } = await supabaseClient
+        .from('perfiles')
+        .upsert({ id: session.user.id, estilos: nuevosEstilos }, { onConflict: 'id' });
 
-    document.getElementById('specColor').value = specs["Color"] || '';
-    document.getElementById('specMotor').value = specs["Motor"] || '';
-    document.getElementById('specPrecio').value = rawPrecio;
-    document.getElementById('specPotencia').value = specs["Potencia"] || '';
-    document.getElementById('specTraccion').value = specs["Tracción"] || '';
-    document.getElementById('specKm').value = rawKm;
-    document.getElementById('specTransmision').value = specs["Transmisión"] || '';
+      if (error) throw error;
+      alert("¡Tema visual guardado correctamente!");
+    } catch (err) {
+      alert("Error al guardar estilos: " + err.message);
+    } finally {
+      btn.innerText = "Guardar Tema Visual";
+      btn.disabled = false;
+    }
+  });
 
-    document.getElementById('descripcion').value = carro.descripcion || '';
+  async function subirImagen(file) {
+    const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}_${file.name.replace(/\s+/g, '_')}`;
+    const { error: storageError } = await supabaseClient.storage.from('fotos-carros').upload(fileName, file);
+    if (storageError) throw storageError;
 
-    document.getElementById('formTitle').innerText = `Editar Unidad #${id}`;
-    document.getElementById('btnGuardar').innerText = "Actualizar Unidad";
-    document.getElementById('btnCancelar').style.display = "block";
-    document.getElementById('lblPortada').innerText = "Foto de Portada (deja vacío para conservar la actual):";
-    document.getElementById('lblGaleria').innerText = "Galería de Fotos (deja vacío para conservar las actuales):";
+    const { data: publicUrlData } = supabaseClient.storage.from('fotos-carros').getPublicUrl(fileName);
+    return publicUrlData.publicUrl;
+  }
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+  function formatearPrecio(val) {
+    const num = parseInt(val) || 0;
+    return '$' + num.toLocaleString('en-US') + ' MXN';
+  }
 
-  function cancelarEdicion() {
-    editandoId = null;
-    fotosExistentes = { portada: '', galeria: [] };
-    document.getElementById('carForm').reset();
-    document.getElementById('id').disabled = false;
-    document.getElementById('formTitle').innerText = "Agregar Nueva Unidad";
-    document.getElementById('btnGuardar').innerText = "Guardar y Publicar";
-    document.getElementById('btnCancelar').style.display = "none";
-    document.getElementById('lblPortada').innerText = "Foto de Portada (1 sola foto principal):";
-    document.getElementById('lblGaleria').innerText = "Galería de Fotos (puedes seleccionar varias):";
-  }
+  function formatearKm(val) {
+    const num = parseInt(val) || 0;
+    return num.toLocaleString('en-US') + ' km';
+  }
 
-  document.getElementById('carForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const btn = document.getElementById('btnGuardar');
-    btn.innerText = "Procesando...";
-    btn.disabled = true;
+  async function prepararEdicion(id) {
+    const carro = inventarioLocal.find(item => item.id == id);
+    if (!carro) return;
 
-    try {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (!session) throw new Error("No hay sesión activa.");
+    editandoId = id;
+    fotosExistentes = { portada: carro.portada || '', galeria: carro.fotos || [] };
 
-      const portadaInput = document.getElementById('fotoPortada');
-      const galeriaInput = document.getElementById('fotosGaleria');
+    document.getElementById('id').value = carro.id;
+    document.getElementById('id').disabled = true;
+    document.getElementById('marca').value = carro.marca || '';
+    document.getElementById('modelo').value = carro.modelo || '';
+    document.getElementById('anio').value = carro.anio || '';
+    
+    const specs = carro.specs || {};
 
-      let portadaUrl = fotosExistentes.portada;
-      let fotosGaleriaUrls = fotosExistentes.galeria;
+    const rawPrecio = specs["Precio"] ? specs["Precio"].replace(/[^0-9]/g, '') : '';
+    const rawKm = specs["Kilometraje"] ? specs["Kilometraje"].replace(/[^0-9]/g, '') : '';
 
-      if (portadaInput.files.length > 0) {
-        portadaUrl = await subirImagen(portadaInput.files[0]);
-      } else if (!editandoId && portadaInput.files.length === 0) {
-        throw new Error("Debes seleccionar una foto de portada.");
-      }
+    document.getElementById('specColor').value = specs["Color"] || '';
+    document.getElementById('specMotor').value = specs["Motor"] || '';
+    document.getElementById('specPrecio').value = rawPrecio;
+    document.getElementById('specPotencia').value = specs["Potencia"] || '';
+    document.getElementById('specTraccion').value = specs["Tracción"] || '';
+    document.getElementById('specKm').value = rawKm;
+    document.getElementById('specTransmision').value = specs["Transmisión"] || '';
 
-      if (galeriaInput.files.length > 0) {
-        const nuevasFotos = [];
-        for (let i = 0; i < galeriaInput.files.length; i++) {
-          const url = await subirImagen(galeriaInput.files[i]);
-          nuevasFotos.push(url);
-        }
-        fotosGaleriaUrls = nuevasFotos;
-      }
+    document.getElementById('descripcion').value = carro.descripcion || '';
 
-      const rawPrecio = document.getElementById('specPrecio').value;
-      const rawKm = document.getElementById('specKm').value;
+    document.getElementById('formTitle').innerText = `Editar Unidad #${id}`;
+    document.getElementById('btnGuardar').innerText = "Actualizar Unidad";
+    document.getElementById('btnCancelar').style.display = "block";
+    document.getElementById('lblPortada').innerText = "Foto de Portada (deja vacío para conservar la actual):";
+    document.getElementById('lblGaleria').innerText = "Galería de Fotos (deja vacío para conservar las actuales):";
 
-      const specsJson = {
-        "Color": document.getElementById('specColor').value.trim(),
-        "Motor": document.getElementById('specMotor').value.trim(),
-        "Precio": formatearPrecio(rawPrecio),
-        "Potencia": document.getElementById('specPotencia').value.trim(),
-        "Tracción": document.getElementById('specTraccion').value.trim(),
-        "Kilometraje": formatearKm(rawKm),
-        "Transmisión": document.getElementById('specTransmision').value.trim()
-      };
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
-      const datosCarro = {
-        id: document.getElementById('id').value.trim(),
-        marca: document.getElementById('marca').value.trim(),
-        modelo: document.getElementById('modelo').value.trim(),
-        anio: parseInt(document.getElementById('anio').value),
-        portada: portadaUrl,
-        fotos: fotosGaleriaUrls,
-        specs: specsJson,
-        descripcion: document.getElementById('descripcion').value.trim(),
-        empresa_id: session.user.id
-      };
+  function cancelarEdicion() {
+    editandoId = null;
+    fotosExistentes = { portada: '', galeria: [] };
+    document.getElementById('carForm').reset();
+    document.getElementById('id').disabled = false;
+    document.getElementById('formTitle').innerText = "Agregar Nueva Unidad";
+    document.getElementById('btnGuardar').innerText = "Guardar y Publicar";
+    document.getElementById('btnCancelar').style.display = "none";
+    document.getElementById('lblPortada').innerText = "Foto de Portada (1 sola foto principal):";
+    document.getElementById('lblGaleria').innerText = "Galería de Fotos (puedes seleccionar varias):";
+  }
 
-      if (editandoId) {
-        const { error: updateError } = await supabaseClient
-          .from('carros')
-          .update(datosCarro)
-          .eq('id', editandoId)
-          .eq('empresa_id', session.user.id);
-          
-        if (updateError) throw updateError;
-        alert("¡Unidad actualizada correctamente!");
-      } else {
-        datosCarro.estado = 'DISPONIBLE';
-        const { error: insertError } = await supabaseClient.from('carros').insert([datosCarro]);
-        if (insertError) throw insertError;
-        alert("¡Vehículo publicado correctamente!");
-      }
+  document.getElementById('carForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnGuardar');
+    btn.innerText = "Procesando...";
+    btn.disabled = true;
 
-      cancelarEdicion();
-      cargarInventario();
-    } catch (err) {
-      alert("Error: " + err.message);
-    } finally {
-      btn.innerText = editandoId ? "Actualizar Unidad" : "Guardar y Publicar";
-      btn.disabled = false;
-    }
-  });
+    try {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) throw new Error("No hay sesión activa.");
 
-  async function cambiarEstado(id, nuevoEstado) {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) return;
+      const portadaInput = document.getElementById('fotoPortada');
+      const galeriaInput = document.getElementById('fotosGaleria');
 
-    const { error } = await supabaseClient
-      .from('carros')
-      .update({ estado: nuevoEstado })
-      .eq('id', id)
-      .eq('empresa_id', session.user.id);
+      let portadaUrl = fotosExistentes.portada;
+      let fotosGaleriaUrls = fotosExistentes.galeria;
 
-    if (error) alert("Error al actualizar estado: " + error.message);
-    else cargarInventario();
-  }
+      if (portadaInput.files.length > 0) {
+        portadaUrl = await subirImagen(portadaInput.files[0]);
+      } else if (!editandoId && portadaInput.files.length === 0) {
+        throw new Error("Debes seleccionar una foto de portada.");
+      }
 
-  async function eliminarCarro(id) {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) return;
+      if (galeriaInput.files.length > 0) {
+        const nuevasFotos = [];
+        for (let i = 0; i < galeriaInput.files.length; i++) {
+          const url = await subirImagen(galeriaInput.files[i]);
+          nuevasFotos.push(url);
+        }
+        fotosGaleriaUrls = nuevasFotos;
+      }
 
-    if (confirm(`¿Seguro que deseas eliminar el carro #${id}?`)) {
-      const { error } = await supabaseClient
-        .from('carros')
-        .delete()
-        .eq('id', id)
-        .eq('empresa_id', session.user.id);
+      const rawPrecio = document.getElementById('specPrecio').value;
+      const rawKm = document.getElementById('specKm').value;
 
-      if (error) alert("Error al eliminar: " + error.message);
-      else cargarInventario();
-    }
-  }
+      const specsJson = {
+        "Color": document.getElementById('specColor').value.trim(),
+        "Motor": document.getElementById('specMotor').value.trim(),
+        "Precio": formatearPrecio(rawPrecio),
+        "Potencia": document.getElementById('specPotencia').value.trim(),
+        "Tracción": document.getElementById('specTraccion').value.trim(),
+        "Kilometraje": formatearKm(rawKm),
+        "Transmisión": document.getElementById('specTransmision').value.trim()
+      };
 
-  async function generarQR(id) {
-    idActualQR = id;
-    const carro = inventarioLocal.find(item => item.id == id);
-    const nombreAuto = carro ? `${carro.marca} ${carro.modelo}` : `Unidad`;
+      const datosCarro = {
+        id: document.getElementById('id').value.trim(),
+        marca: document.getElementById('marca').value.trim(),
+        modelo: document.getElementById('modelo').value.trim(),
+        anio: parseInt(document.getElementById('anio').value),
+        portada: portadaUrl,
+        fotos: fotosGaleriaUrls,
+        specs: specsJson,
+        descripcion: document.getElementById('descripcion').value.trim(),
+        empresa_id: session.user.id
+      };
 
-    document.getElementById('qrTitulo').innerText = `${nombreAuto} (#${id})`;
-    document.getElementById('qrcode').innerHTML = "";
+      if (editandoId) {
+        const { error: updateError } = await supabaseClient
+          .from('carros')
+          .update(datosCarro)
+          .eq('id', editandoId)
+          .eq('empresa_id', session.user.id);
+          
+        if (updateError) throw updateError;
+        alert("¡Unidad actualizada correctamente!");
+      } else {
+        datosCarro.estado = 'DISPONIBLE';
+        const { error: insertError } = await supabaseClient.from('carros').insert([datosCarro]);
+        if (insertError) throw insertError;
+        alert("¡Vehículo publicado correctamente!");
+      }
 
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    const loteId = session?.user?.id || "";
+      cancelarEdicion();
+      cargarInventario();
+    } catch (err) {
+      alert("Error: " + err.message);
+    } finally {
+      btn.innerText = editandoId ? "Actualizar Unidad" : "Guardar y Publicar";
+      btn.disabled = false;
+    }
+  });
 
-    const linkCarro = `${BASE_URL_CATALOGO}?lote=${loteId}#/carro/${id}`;
+  async function cambiarEstado(id, nuevoEstado) {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) return;
 
-    new QRCode(document.getElementById("qrcode"), {
-      text: linkCarro,
-      width: 180,
-      height: 180
-    });
+    const { error } = await supabaseClient
+      .from('carros')
+      .update({ estado: nuevoEstado })
+      .eq('id', id)
+      .eq('empresa_id', session.user.id);
 
-    document.getElementById('qrModal').style.display = 'flex';
-  }
+    if (error) alert("Error al actualizar estado: " + error.message);
+    else cargarInventario();
+  }
 
-  function descargarQR() {
-    const qrContainer = document.getElementById('qrcode');
-    const img = qrContainer.querySelector('img');
-    const canvas = qrContainer.querySelector('canvas');
+  async function eliminarCarro(id) {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) return;
 
-    let imageSrc = "";
-    if (img && img.src) {
-      imageSrc = img.src;
-    } else if (canvas) {
-      imageSrc = canvas.toDataURL("image/png");
-    }
+    if (confirm(`¿Seguro que deseas eliminar el carro #${id}?`)) {
+      const { error } = await supabaseClient
+        .from('carros')
+        .delete()
+        .eq('id', id)
+        .eq('empresa_id', session.user.id);
 
-    if (!imageSrc) {
-      alert("El código QR aún se está generando, intenta de nuevo.");
-      return;
-    }
+      if (error) alert("Error al eliminar: " + error.message);
+      else cargarInventario();
+    }
+  }
 
-    const link = document.createElement('a');
-    link.href = imageSrc;
-    link.download = `QR_Auto_${idActualQR}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
+  async function generarQR(id) {
+    idActualQR = id;
+    const carro = inventarioLocal.find(item => item.id == id);
+    const nombreAuto = carro ? `${carro.marca} ${carro.modelo}` : `Unidad`;
 
-  function cerrarQR() {
-    document.getElementById('qrModal').style.display = 'none';
-  }
+    document.getElementById('qrTitulo').innerText = `${nombreAuto} (#${id})`;
+    document.getElementById('qrcode').innerHTML = "";
+
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    const loteId = session?.user?.id || "";
+
+    const linkCarro = `${BASE_URL_CATALOGO}?lote=${loteId}#/carro/${id}`;
+
+    new QRCode(document.getElementById("qrcode"), {
+      text: linkCarro,
+      width: 180,
+      height: 180
+    });
+
+    document.getElementById('qrModal').style.display = 'flex';
+  }
+
+  function descargarQR() {
+    const qrContainer = document.getElementById('qrcode');
+    const img = qrContainer.querySelector('img');
+    const canvas = qrContainer.querySelector('canvas');
+
+    let imageSrc = "";
+    if (img && img.src) {
+      imageSrc = img.src;
+    } else if (canvas) {
+      imageSrc = canvas.toDataURL("image/png");
+    }
+
+    if (!imageSrc) {
+      alert("El código QR aún se está generando, intenta de nuevo.");
+      return;
+    }
+
+    const link = document.createElement('a');
+    link.href = imageSrc;
+    link.download = `QR_Auto_${idActualQR}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  function cerrarQR() {
+    document.getElementById('qrModal').style.display = 'none';
+  }
 </script>
 </body>
 </html>
