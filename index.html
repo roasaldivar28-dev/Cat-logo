@@ -82,7 +82,7 @@
     letter-spacing:1.8px;
   }
 
-  /* LOGO DEL HEADER (INDEPENDIENTE) */
+  /* LOGO DEL HEADER */
   .logo-header {
     height: 42px;
     width: auto;
@@ -90,7 +90,7 @@
     mix-blend-mode: screen;
   }
 
-  /* LOGO DEL HERO / LOTE (INDEPENDIENTE) */
+  /* LOGO DEL HERO / LOTE */
   .logo-hero {
     width: 100%;
     height: auto;
@@ -202,11 +202,32 @@
     font-family:'Barlow Condensed',sans-serif;
     font-weight:600;font-size:25px;line-height:1;
     text-transform:uppercase;letter-spacing:.4px;
+    margin-bottom:8px;
   }
+
+  /* NUEVO: ALINEACIÓN DE KM Y PRECIO */
+  .card-footer-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,.05);
+  }
+
   .card-meta{
     font:11px 'IBM Plex Mono',monospace;
-    color:var(--muted);margin-top:8px;
+    color:var(--muted);
     letter-spacing:.4px;
+  }
+
+  .card-price {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--accent);
+    letter-spacing: .5px;
+    text-align: right;
   }
 
   .badge{
@@ -401,12 +422,29 @@ const fichaContenido = document.getElementById('ficha-contenido');
 const searchInput = document.getElementById('search');
 if(searchInput) searchInput.addEventListener('input', pintarCatalogo);
 
+// Funciones Auxiliares para Formatos
+function formatearKM(val) {
+  if (!val && val !== 0) return 'N/D';
+  const num = parseInt(val, 10);
+  if (isNaN(num)) return val;
+  return `${num.toLocaleString('es-MX')} km`;
+}
+
+function formatearPrecio(val) {
+  if (!val && val !== 0) return '';
+  const num = parseFloat(val);
+  if (isNaN(num)) return '';
+  return `$${num.toLocaleString('es-MX')}`;
+}
+
 function pintarCatalogo(){
   const term = (document.getElementById('search')?.value || '').trim().toLowerCase();
 
   const filtrados = CARROS.filter(c => {
+    const kmTexto = c.km || c.kilometraje || '';
+    const precioTexto = c.precio || '';
     const texto = [
-      c.id, c.marca, c.modelo, c.anio, c.estado, c.km
+      c.id, c.marca, c.modelo, c.anio, c.estado, kmTexto, precioTexto
     ].join(' ').toLowerCase();
     return texto.includes(term);
   });
@@ -419,19 +457,32 @@ function pintarCatalogo(){
     return;
   }
 
-  grid.innerHTML = filtrados.map(c => `
-    <div class="card" onclick="location.hash='#/carro/${c.id}'">
-      <div class="card-media">
-        <span class="card-code">#${String(c.id).toUpperCase()}</span>
-        <img src="${c.portada}" alt="${c.marca} ${c.modelo}" loading="lazy">
+  grid.innerHTML = filtrados.map(c => {
+    // Detecta la propiedad del km (km o kilometraje)
+    const kmValor = c.km !== undefined ? c.km : c.kilometraje;
+    const kmTexto = formatearKM(kmValor);
+    
+    // Detecta la propiedad del precio
+    const precioTexto = formatearPrecio(c.precio);
+
+    return `
+      <div class="card" onclick="location.hash='#/carro/${c.id}'">
+        <div class="card-media">
+          <span class="card-code">#${String(c.id).toUpperCase()}</span>
+          <img src="${c.portada}" alt="${c.marca} ${c.modelo}" loading="lazy">
+        </div>
+        <div class="card-body">
+          ${c.estado ? `<span class="badge badge-${String(c.estado).toLowerCase()}">${c.estado}</span>` : ''}
+          <div class="card-title">${c.marca} ${c.modelo}</div>
+          
+          <div class="card-footer-info">
+            <div class="card-meta">${c.anio} · ${kmTexto}</div>
+            ${precioTexto ? `<div class="card-price">${precioTexto}</div>` : ''}
+          </div>
+        </div>
       </div>
-      <div class="card-body">
-        ${c.estado ? `<span class="badge badge-${String(c.estado).toLowerCase()}">${c.estado}</span>` : ''}
-        <div class="card-title">${c.marca} ${c.modelo}</div>
-        <div class="card-meta">${c.anio} · ${c.km || 'N/D'}</div>
-      </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 function actualizarEnlaceWhatsApp() {
@@ -554,7 +605,9 @@ async function cargarCarros(){
   const urlParams = new URLSearchParams(window.location.search);
   const loteId = urlParams.get('lote');
 
-  const perfilPromise = loteId ? cargarPerfilEmpresa(loteId) : Promise.resolve();
+  if (loteId) {
+    await cargarPerfilEmpresa(loteId);
+  }
 
   let query = supabaseClient.from('carros').select('*');
   if (loteId) {
@@ -570,8 +623,6 @@ async function cargarCarros(){
 
   CARROS = data || [];
   
-  await perfilPromise;
-
   window.addEventListener('hashchange', enrutar);
   pintarCatalogo();
   enrutar();
