@@ -96,6 +96,7 @@
 
     .form-group { margin-bottom: 14px; }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
 
     label {
       display: block;
@@ -117,6 +118,13 @@
       font-size: 14.5px;
       transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
+    
+    input[type="color"] {
+      height: 44px;
+      padding: 4px;
+      cursor: pointer;
+    }
+
     input::placeholder, textarea::placeholder { color: var(--text-dim); }
     input:focus, textarea:focus, select:focus {
       outline: none;
@@ -297,7 +305,7 @@
     }
 
     @media (max-width: 480px) {
-      .grid-2 { grid-template-columns: 1fr; }
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
       .header-bar { flex-direction: column; align-items: flex-start; gap: 12px; }
       .item-actions { width: 100%; }
     }
@@ -435,6 +443,59 @@
       </form>
     </div>
 
+    <!-- SECCIÓN DE PERSONALIZACIÓN VISUAL -->
+    <div class="card">
+      <span class="eyebrow">Personalización</span>
+      <h2>Tema Visual del Catálogo</h2>
+
+      <form id="formEstilos" style="margin-top: 18px;">
+        <div class="form-group">
+          <label for="estiloFuente">Tipografía Principal</label>
+          <select id="estiloFuente">
+            <option value="'Inter', sans-serif">Inter (Moderna / Limpia)</option>
+            <option value="'Segoe UI', Roboto, sans-serif">Segoe UI (Estándar)</option>
+            <option value="'Montserrat', sans-serif">Montserrat (Elegante)</option>
+            <option value="'Poppins', sans-serif">Poppins (Geométrica)</option>
+            <option value="'Georgia', serif">Georgia (Clásica / Serif)</option>
+          </select>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="colorFondo">Fondo de Página</label>
+            <input type="color" id="colorFondo" value="#16161b">
+          </div>
+          <div class="form-group">
+            <label for="colorTexto">Texto Principal</label>
+            <input type="color" id="colorTexto" value="#ede9e2">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="colorTarjeta">Fondo de Tarjetas de Autos</label>
+          <input type="color" id="colorTarjeta" value="#1d1d24">
+        </div>
+
+        <div class="section-label">Colores de Etiquetas de Estado</div>
+        <div class="grid-3">
+          <div class="form-group">
+            <label for="colorEtiquetaDispo">Disponible</label>
+            <input type="color" id="colorEtiquetaDispo" value="#6ba381">
+          </div>
+          <div class="form-group">
+            <label for="colorEtiquetaApart">Apartado</label>
+            <input type="color" id="colorEtiquetaApart" value="#d1a054">
+          </div>
+          <div class="form-group">
+            <label for="colorEtiquetaVend">Vendido</label>
+            <input type="color" id="colorEtiquetaVend" value="#c26a66">
+          </div>
+        </div>
+
+        <button type="submit" id="btnGuardarEstilos" style="margin-top: 10px;">Guardar Tema Visual</button>
+      </form>
+    </div>
+
     <!-- INVENTARIO -->
     <div class="card">
       <span class="eyebrow">Existencias</span>
@@ -502,7 +563,6 @@
     const password = document.getElementById('loginPassword').value.trim();
 
     try {
-      // Intentar cerrar cualquier sesión residual activa antes de iniciar una nueva
       await supabaseClient.auth.signOut();
 
       const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
@@ -527,12 +587,10 @@
     } catch (err) {
       console.error("Error al cerrar sesión:", err);
     } finally {
-      // Limpiar datos en memoria
       inventarioLocal = [];
       editandoId = null;
       fotosExistentes = { portada: '', galeria: [] };
       
-      // Limpiar almacenamiento local y recargar vista limpiamente
       localStorage.clear();
       sessionStorage.clear();
       mostrarLogin();
@@ -543,6 +601,7 @@
     document.getElementById('loginCard').style.display = 'none';
     document.getElementById('adminPanel').style.display = 'block';
     cargarInventario();
+    cargarEstilosPerfil();
   }
 
   function mostrarLogin() {
@@ -597,6 +656,70 @@
       </div>
     `).join('');
   }
+
+  // Cargar los estilos existentes guardados en el perfil
+  async function cargarEstilosPerfil() {
+    try {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) return;
+
+      const { data, error } = await supabaseClient
+        .from('perfiles')
+        .select('estilos')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      if (error) return console.error("Error obteniendo estilos:", error.message);
+
+      if (data && data.estilos) {
+        const e = data.estilos;
+        if (e.fuente) document.getElementById('estiloFuente').value = e.fuente;
+        if (e.colorFondo) document.getElementById('colorFondo').value = e.colorFondo;
+        if (e.colorTexto) document.getElementById('colorTexto').value = e.colorTexto;
+        if (e.colorTarjeta) document.getElementById('colorTarjeta').value = e.colorTarjeta;
+        if (e.colorEtiquetaDispo) document.getElementById('colorEtiquetaDispo').value = e.colorEtiquetaDispo;
+        if (e.colorEtiquetaApart) document.getElementById('colorEtiquetaApart').value = e.colorEtiquetaApart;
+        if (e.colorEtiquetaVend) document.getElementById('colorEtiquetaVend').value = e.colorEtiquetaVend;
+      }
+    } catch (err) {
+      console.error("Error al cargar estilos:", err);
+    }
+  }
+
+  // Guardar estilos en la tabla perfiles
+  document.getElementById('formEstilos').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnGuardarEstilos');
+    btn.innerText = "Guardando...";
+    btn.disabled = true;
+
+    try {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) throw new Error("No hay una sesión activa.");
+
+      const nuevosEstilos = {
+        fuente: document.getElementById('estiloFuente').value,
+        colorFondo: document.getElementById('colorFondo').value,
+        colorTexto: document.getElementById('colorTexto').value,
+        colorTarjeta: document.getElementById('colorTarjeta').value,
+        colorEtiquetaDispo: document.getElementById('colorEtiquetaDispo').value,
+        colorEtiquetaApart: document.getElementById('colorEtiquetaApart').value,
+        colorEtiquetaVend: document.getElementById('colorEtiquetaVend').value
+      };
+
+      const { error } = await supabaseClient
+        .from('perfiles')
+        .upsert({ id: session.user.id, estilos: nuevosEstilos }, { onConflict: 'id' });
+
+      if (error) throw error;
+      alert("¡Tema visual guardado correctamente!");
+    } catch (err) {
+      alert("Error al guardar estilos: " + err.message);
+    } finally {
+      btn.innerText = "Guardar Tema Visual";
+      btn.disabled = false;
+    }
+  });
 
   async function subirImagen(file) {
     const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}_${file.name.replace(/\s+/g, '_')}`;
