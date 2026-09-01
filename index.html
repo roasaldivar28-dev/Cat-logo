@@ -529,9 +529,14 @@ function pintarFicha(carro){
   const mensajeWA = `¡Hola! Me interesa la unidad ${carro.marca} ${carro.modelo} ${carro.anio}. ¿Sigue disponible?`;
   const urlWhatsApp = `https://api.whatsapp.com/send?phone=${TELEFONO_WHATSAPP}&text=${encodeURIComponent(mensajeWA)}`;
 
-  const specsHtml = Object.entries(carro.specs || {}).map(([k,v]) => `
-    <div class="spec-row"><span>${k}</span><span>${v}</span></div>
-  `).join('');
+  // Claves que NO queremos mostrar en la ficha técnica
+  const clavesOcultar = ['potencia', 'traccion', 'tracción'];
+
+  const specsHtml = Object.entries(carro.specs || {})
+    .filter(([k]) => !clavesOcultar.includes(k.toLowerCase().trim()))
+    .map(([k,v]) => `
+      <div class="spec-row"><span>${k}</span><span>${v}</span></div>
+    `).join('');
 
   const visorHtml = carro.modelo3d
     ? `<model-viewer src="${carro.modelo3d}" camera-controls auto-rotate shadow-intensity="1"></model-viewer>`
