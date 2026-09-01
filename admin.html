@@ -387,17 +387,6 @@
             <input type="number" id="specPrecio" required placeholder="ej. 215000">
           </div>
           <div class="form-group">
-            <label>Potencia</label>
-            <input type="text" id="specPotencia" required placeholder="ej. 113 hp">
-          </div>
-        </div>
-
-        <div class="grid-2">
-          <div class="form-group">
-            <label>Tracción</label>
-            <input type="text" id="specTraccion" required placeholder="ej. Delantera">
-          </div>
-          <div class="form-group">
             <label>Kilometraje (número sin comas)</label>
             <input type="number" id="specKm" required placeholder="ej. 42000">
           </div>
@@ -626,8 +615,6 @@
     document.getElementById('specColor').value = specs["Color"] || '';
     document.getElementById('specMotor').value = specs["Motor"] || '';
     document.getElementById('specPrecio').value = rawPrecio;
-    document.getElementById('specPotencia').value = specs["Potencia"] || '';
-    document.getElementById('specTraccion').value = specs["Tracción"] || '';
     document.getElementById('specKm').value = rawKm;
     document.getElementById('specTransmision').value = specs["Transmisión"] || '';
 
@@ -692,8 +679,6 @@
         "Color": document.getElementById('specColor').value.trim(),
         "Motor": document.getElementById('specMotor').value.trim(),
         "Precio": formatearPrecio(rawPrecio),
-        "Potencia": document.getElementById('specPotencia').value.trim(),
-        "Tracción": document.getElementById('specTraccion').value.trim(),
         "Kilometraje": formatearKm(rawKm),
         "Transmisión": document.getElementById('specTransmision').value.trim()
       };
